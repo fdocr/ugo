@@ -1,0 +1,33 @@
+<% pending = Current.user.pending_invitations.includes(:workspace, :invited_by) %>
+<% if pending.any? %>
+  <%= render "ui/card", tone: :warning do %>
+    <h3 class="text-lg font-semibold text-warning-800 mb-4">Pending Invitations</h3>
+    <div class="space-y-3">
+      <% pending.each do |invitation| %>
+        <div id="<%= dom_id(invitation, :pending) %>" class="flex flex-col gap-3 p-4 rounded-md bg-white border border-warning-200 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-full bg-warning-100 flex items-center justify-center text-warning-700 flex-shrink-0">
+              <%= render "shared/svg/envelope", class: "w-5 h-5" %>
+            </span>
+            <div class="min-w-0">
+              <p class="font-medium text-foreground truncate"><%= invitation.workspace.name %></p>
+              <p class="text-sm text-muted-foreground truncate">
+                Invited by <%= invitation.invited_by.email %> as <%= invitation.role %>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 sm:self-auto justify-end">
+            <%= button_to "Decline", respond_invitation_path(invitation),
+                  params: { response: "decline" },
+                  method: :patch,
+                  class: "ui-btn-secondary ui-btn-sm" %>
+            <%= button_to "Accept", respond_invitation_path(invitation),
+                  params: { response: "accept" },
+                  method: :patch,
+                  class: "ui-btn-primary ui-btn-sm" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

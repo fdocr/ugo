@@ -1,0 +1,15 @@
+<%# locals: (title:, body: nil, icon: "no_data", action: nil, compact: false) %>
+<div class="text-center <%= compact ? "py-8" : "py-12" %>">
+  <% if icon.present? %>
+    <div class="text-muted-foreground/60 mb-3 inline-flex">
+      <%= render "shared/svg/#{icon}", class: compact ? "w-8 h-8" : "w-12 h-12" %>
+    </div>
+  <% end %>
+  <h3 class="text-base font-medium text-foreground mb-1"><%= title %></h3>
+  <% if body.present? %>
+    <p class="text-sm text-muted-foreground"><%= body %></p>
+  <% end %>
+  <% if action.present? %>
+    <div class="mt-4"><%= action %></div>
+  <% end %>
+</div>

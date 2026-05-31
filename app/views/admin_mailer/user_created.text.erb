@@ -1,0 +1,13 @@
+Welcome to <%= @app_name %>
+<%= "=" * ("Welcome to #{@app_name}".length) %>
+
+An administrator has created an account for you. Here are your login credentials:
+
+Email: <%= @user.email %>
+Password: <%= @password %>
+
+Please sign in and change your password as soon as possible.
+
+Sign in at: <%= @login_url %>
+
+If you did not expect this email, please contact your administrator.

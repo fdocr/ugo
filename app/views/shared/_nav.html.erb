@@ -1,0 +1,64 @@
+<nav class="fixed top-0 left-0 right-0 py-6 px-4 relative z-30 border-b shadow-sm bg-white">
+  <% unless @back_url.nil? %>
+    <%= link_to @back_url, class: "absolute left-0 top-1 m-6 text-foreground" do %>
+      <%= render "shared/svg/chevron_left", class: "w-5 h-5" %>
+    <% end %>
+  <% end %>
+
+  <div class="flex justify-center items-center max-w-[300px] mx-auto">
+    <% if title = @page_title %>
+      <h2 class="text-center text-2xl font-bold truncate"><%= title %></h2>
+    <% else %>
+      <%= link_to root_path do %>
+        <% if AppConfig.self_hosted? %>
+          <span class="h-10 sm:h-12 inline-flex items-center font-bold text-2xl tracking-tight text-foreground"><%= AppConfig.shared.app_domain.presence || "Self Hosted" %></span>
+        <% else %>
+          <%= image_tag "ugo_logo.png", class: "h-10 sm:h-12" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div data-controller="dropdown" class="ui-nav-menu">
+    <button type="button" name="menu" aria-label="Open menu"
+            class="absolute right-0 top-1 p-6 text-foreground hover:text-primary-600 transition-colors"
+            data-action="dropdown#toggle click@window->dropdown#hide">
+      <%= render "shared/svg/menu", class: "w-6 h-6" %>
+    </button>
+
+    <div
+      data-dropdown-target="menu"
+      class="ui-nav-menu-panel hidden transition transform"
+      data-transition-enter-from="opacity-0 scale-95"
+      data-transition-enter-to="opacity-100 scale-100"
+      data-transition-leave-from="opacity-100 scale-100"
+      data-transition-leave-to="opacity-0 scale-95"
+    >
+      <%= link_to root_path, class: "ui-nav-link-logo", data: { action: "dropdown#toggle" } do %>
+        <%= image_tag "ugo_logo.png", class: "h-8" %>
+      <% end %>
+      <% if authenticated? %>
+        <%= link_to "Dashboard", dashboard_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+      <% else %>
+        <%= link_to "Sign in", new_session_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+        <% unless self_hosted? %>
+          <%= link_to "Sign up", sign_up_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+        <% end %>
+      <% end %>
+      <hr class="ui-nav-sep">
+      <% if authenticated? && Current.user.site_admin? %>
+        <%= link_to "Site Admin", admin_root_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+        <%= link_to "Jobs", mission_control_jobs_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+        <hr class="ui-nav-sep">
+      <% end %>
+      <% if !authenticated? && !self_hosted? %>
+        <%= link_to "Pricing", pricing_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+      <% end %>
+      <%= link_to "About", about_path, class: "ui-nav-link", data: { action: "dropdown#toggle" } %>
+      <% if authenticated? %>
+        <hr class="ui-nav-sep">
+        <%= button_to "Sign out", session_path, method: :delete, class: "ui-nav-link-danger" %>
+      <% end %>
+    </div>
+  </div>
+</nav>

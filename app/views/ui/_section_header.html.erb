@@ -1,0 +1,19 @@
+<%# locals: (title: nil, description: nil, badge: nil, actions: nil) %>
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="min-w-0">
+    <% if title.present? %>
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground"><%= title %></h1>
+        <% if badge.present? %><%= badge %><% end %>
+      </div>
+    <% end %>
+    <% if description.present? %>
+      <p class="text-muted-foreground pt-1 text-sm"><%= description %></p>
+    <% end %>
+  </div>
+  <% if actions.present? %>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <%= actions %>
+    </div>
+  <% end %>
+</div>

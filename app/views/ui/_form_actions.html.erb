@@ -1,0 +1,7 @@
+<%# locals: (cancel_to: nil, cancel_text: "Cancel", submit_text:, submit_form:, full: true, align: :center) %>
+<div class="flex gap-3 <%= full ? "max-w-96 mx-auto" : "" %> <%= align == :end ? "justify-end" : "" %>">
+  <% if cancel_to.present? %>
+    <%= link_to cancel_text, cancel_to, class: "ui-btn-secondary ui-btn-md flex-1" %>
+  <% end %>
+  <%= submit_form.submit submit_text, class: "ui-btn-primary ui-btn-md flex-1" %>
+</div>

@@ -1,0 +1,15 @@
+<%# locals: (url:, value:, placeholder: "Search…", frame: nil, hidden_fields: {}, clear_url: nil, clear_visible: false) %>
+<%= form_with url: url, method: :get, data: ({ turbo_frame: frame } if frame), class: "flex gap-2 flex-1" do |f| %>
+  <% hidden_fields.each do |name, val| %>
+    <%= f.hidden_field name, value: val %>
+  <% end %>
+  <%= f.text_field :search,
+        value: value,
+        placeholder: placeholder,
+        class: "ui-input flex-1" %>
+  <%= f.submit "Search", class: "ui-btn-primary ui-btn-sm" %>
+  <% if clear_visible && clear_url %>
+    <%= link_to "Clear", clear_url, class: "ui-btn-secondary ui-btn-sm",
+          data: ({ turbo_frame: frame } if frame) %>
+  <% end %>
+<% end %>

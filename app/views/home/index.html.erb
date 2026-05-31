@@ -1,0 +1,154 @@
+<div class="min-h-screen">
+  <!-- Hero Section -->
+  <div class="container mx-auto px-4 py-16 sm:py-24">
+    <div class="flex flex-col items-center justify-center text-center space-y-6 max-w-3xl mx-auto">
+      <div class="w-full text-left">
+        <%= render "ui/banner",
+              tone: :info,
+              title: "Open beta",
+              body: "ugo is in early development. We are actively refining and evolving. Thanks for trying it out!" %>
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-foreground/90">
+        Share smarter links and own your data
+      </h1>
+
+      <p class="text-lg sm:text-xl text-muted-foreground max-w-2xl">
+        Shorten links with zero configuration, tag them with UTM parameters to improve your analytics, and see exactly how your audience engages. All in one place.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 pt-16">
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "Get Started Now", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+          <%= link_to "View Pricing", pricing_path, class: "ui-btn-secondary ui-btn-lg" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-foreground/90 mb-4">Everything you need</h2>
+        <p class="text-muted-foreground max-w-2xl mx-auto">Powerful features to help you manage, share, and understand your links.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <% [
+          { icon: "link", title: "Short Links", body: "Turn long URLs into clean & short links. No setup, no configuration. Sign up and start sharing in seconds for free." },
+          { icon: "figure", title: "URL Builder", body: "Add UTM parameters to any link with an interactive editor. Your tags flow straight into your Analytics (Google Analytics, Plausible, etc.) so you can measure every campaign." },
+          { icon: "share_nodes", title: "Social Previews", body: "We sync Open Graph tags from your destination so you can see the exact hero image, title, and description that will appear when shared on Twitter, Facebook, and more." },
+          { icon: "chart_bar", title: "Click Analytics", body: "See who clicks, from where, and on what device. Track locations, browsers, and referrers to understand how your audience engages." },
+          { icon: "phone_arrow", title: "Deep Linking", body: "Open your native app from in-app browsers, social networks or emails. Bounce through a custom domain using Universal Links and Android App Links on Dedicated and self-hosted plans." },
+          { icon: "users", title: "Team Workspaces", body: "Organize links into workspaces and invite your team. Everyone sees the same links, analytics, and campaigns." }
+        ].each do |feat| %>
+          <div class="rounded-lg border border-border bg-card p-6 shadow-card">
+            <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center mb-4 text-primary-600">
+              <%= render "shared/svg/#{feat[:icon]}", class: "w-6 h-6" %>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-foreground"><%= feat[:title] %></h3>
+            <p class="text-muted-foreground text-sm"><%= feat[:body] %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Source Section -->
+  <div class="py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <div class="w-14 h-14 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-6 text-success-600">
+          <%= render "shared/svg/branch", class: "w-7 h-7" %>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-bold text-foreground/90 mb-4">Open source at heart</h2>
+        <% if Flipper.enabled?(:open_sourced) %>
+          <p class="text-muted-foreground text-lg mb-6">
+            ugo is fully open source. Inspect the code, contribute improvements, or self-host on your own infrastructure. No vendor lock-in, no hidden tracking. Just transparent software you can trust.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <%= link_to "https://github.com/fdocr/ugo", target: "_blank", rel: "noopener noreferrer", class: "ui-btn-secondary ui-btn-md" do %>
+              <%= render "shared/svg/github", class: "w-5 h-5" %>
+              View on GitHub
+            <% end %>
+            <%= link_to "View Hosted Plans", pricing_path, class: "ui-btn-primary ui-btn-md" %>
+          </div>
+        <% else %>
+          <p class="text-muted-foreground text-lg mb-6">
+            ugo is going open source soon but you don't have to wait, you can self-host today! We want you to be able to inspect the code, self-host on your own infrastructure, or even contribute improvements. We're refining details in these early days but give ugo a free try in the mean time.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <%= link_to "Self-Host Guide", self_host_path, class: "ui-btn-secondary ui-btn-md" %>
+            <%= link_to "View Hosted Plans", pricing_path, class: "ui-btn-primary ui-btn-md" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flexibility Section -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl sm:text-4xl font-bold text-foreground/90 mb-4 text-center">Built for flexibility</h2>
+        <p class="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Whether you want a quick start or full control, there's an option for you.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="rounded-lg border border-border bg-card p-6">
+            <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center mb-4 text-primary-600">
+              <%= render "shared/svg/info", class: "w-5 h-5" %>
+            </div>
+            <h3 class="font-semibold text-lg mb-2 text-foreground">Hosted Plans</h3>
+            <p class="text-muted-foreground text-sm">
+              Zero setup required. Your links have
+              <%= render "shared/url_badge", url: "ugo.cr" %>
+              as domain name. Upgrade as you grow.
+            </p>
+          </div>
+
+          <div class="rounded-lg border border-border bg-card p-6">
+            <div class="w-10 h-10 rounded-full bg-info-100 flex items-center justify-center mb-4 text-info-600">
+              <%= render "shared/svg/folder", class: "w-5 h-5" %>
+            </div>
+            <h3 class="font-semibold text-lg mb-2 text-foreground">Dedicated Server</h3>
+            <p class="text-muted-foreground text-sm">A server just for you on
+              <%= render "shared/url_badge", url: "*.ugo.cr" %>
+              or bring your own custom domain, i.e.
+              <%= render "shared/url_badge", url: "l.yoursite.com" %>.
+              Includes deep linking, unlimited links, and priority support.
+            </p>
+          </div>
+
+          <div class="rounded-lg border border-border bg-card p-6">
+            <div class="w-10 h-10 rounded-full bg-success-100 flex items-center justify-center mb-4 text-success-600">
+              <%= render "shared/svg/branch", class: "w-5 h-5" %>
+            </div>
+            <h3 class="font-semibold text-lg mb-2 text-foreground">Self-Host</h3>
+            <p class="text-muted-foreground text-sm">Open source and free. Run ugo on your own infrastructure with full control and every feature out of the box.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA Section -->
+  <div class="py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl sm:text-4xl font-bold text-foreground/90 mb-4">Ready to get started?</h2>
+        <p class="text-muted-foreground mb-8">Create your first short link in seconds. No credit card required.</p>
+
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "Create Your Free Account", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%= render "shared/footer" %>
+</div>

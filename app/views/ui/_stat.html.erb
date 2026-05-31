@@ -1,0 +1,15 @@
+<%# locals: (value:, label:, tone: :primary) %>
+<%
+  value_class = case tone.to_sym
+  when :muted then "text-foreground"
+  when :info then "text-info-700"
+  when :success then "text-success-700"
+  when :warning then "text-warning-800"
+  when :danger then "text-danger-700"
+  else "text-primary-600"
+  end
+%>
+<div class="text-center">
+  <div class="text-2xl font-bold <%= value_class %>"><%= value %></div>
+  <div class="text-sm text-muted-foreground mt-1"><%= label %></div>
+</div>

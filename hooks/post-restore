@@ -1,0 +1,16 @@
+#!/bin/bash -e
+# Once calls this hook after restoring /rails/storage from a backup,
+# before booting the application. Move backup copies to canonical paths
+# if they exist.
+
+STORAGE="/rails/storage"
+BACKUP_DIR="$STORAGE/backups"
+
+if [ -d "$BACKUP_DIR" ]; then
+  for db in production.sqlite3 production_cache.sqlite3 production_queue.sqlite3 production_cable.sqlite3; do
+    if [ -f "$BACKUP_DIR/$db" ]; then
+      mv "$BACKUP_DIR/$db" "$STORAGE/$db"
+    fi
+  done
+  rmdir "$BACKUP_DIR" 2>/dev/null || true
+fi

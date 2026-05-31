@@ -1,0 +1,32 @@
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <%= render "ui/card", padding: :lg do %>
+      <div class="space-y-2 text-center mb-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-foreground">Set new password</h1>
+        <p class="text-sm text-muted-foreground">Enter your new password below</p>
+      </div>
+
+      <%= form_with url: password_path(params[:token]), method: :put, class: "space-y-5" do |form| %>
+        <%= render "ui/input",
+              form: form, field: :password, type: :password, label: "New password",
+              placeholder: "••••••••",
+              required: true, autofocus: true, autocomplete: "new-password",
+              minlength: 8, maxlength: 72,
+              hint: "Must be at least 8 characters" %>
+
+        <%= render "ui/input",
+              form: form, field: :password_confirmation, type: :password, label: "Confirm password",
+              placeholder: "••••••••",
+              required: true, autocomplete: "new-password",
+              minlength: 8, maxlength: 72 %>
+
+        <%= form.submit "Update password", class: "ui-btn-primary ui-btn-md w-full" %>
+      <% end %>
+    <% end %>
+
+    <p class="text-center text-sm text-muted-foreground mt-6">
+      Remember your password?
+      <%= link_to "Sign in", new_session_path, class: "ui-btn-link" %>
+    </p>
+  </div>
+</div>

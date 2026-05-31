@@ -1,0 +1,111 @@
+<%= turbo_frame_tag "visits-chart", class: "block" do %>
+
+  <!-- Time Range Filter -->
+  <div class="flex flex-col items-center mb-8">
+    <div class="ui-segmented ui-segmented-lg">
+      <% [
+        [ "day", "Today" ],
+        [ "week", "This Week" ],
+        [ "month", "This Month" ]
+      ].each do |key, label| %>
+        <% active = (params[:time_range] == key) || (key == "week" && params[:time_range].blank?) %>
+        <%= link_to label,
+              workspace_link_visits_path(@workspace.id, @link.slug, time_range: key),
+              class: "ui-segmented-option",
+              data: { turbo_frame: "visits-chart", state: (active ? "active" : nil) }.compact %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @visits_count.positive? %>
+    <!-- Summary Stats -->
+    <div class="mb-8 pb-6 border-b border-border">
+      <%= render "ui/stat_grid", cols: 5 do %>
+        <%= render "ui/stat", value: @visits_count, label: "Total Visits" %>
+        <%= render "ui/stat", value: @unique_visitors_count, label: "Unique Visitors", tone: :info %>
+        <%= render "ui/stat", value: @chart_data[:visitors][:data].max || 0, label: "Peak Day" %>
+        <%= render "ui/stat", value: (@chart_data[:visitors][:data].sum.to_f / @chart_data[:visitors][:data].length).round(1), label: "Avg/Day" %>
+        <%= render "ui/stat", value: @unique_countries_count, label: "Countries" %>
+      <% end %>
+    </div>
+
+    <!-- Charts Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-controller="filter" data-filter-devices-outlet="#devices-chart" data-filter-geo-outlet="#geo-chart">
+      <!-- Visitors Chart -->
+      <div class="space-y-2">
+        <div class="relative h-64 w-full">
+          <div data-controller="visitors"
+               data-visitors-data-value="<%= @chart_data[:visitors].to_json %>"
+               class="w-full h-full"></div>
+        </div>
+      </div>
+
+      <!-- Geographic Map Chart -->
+      <div class="space-y-2">
+        <div class="relative h-64 w-full">
+          <div data-controller="map"
+               data-map-data-value="<%= @chart_data[:map].to_json %>"
+               class="w-full h-full"></div>
+        </div>
+      </div>
+
+      <!-- Device Chart with Technology Filters -->
+      <div class="pt-4 border-t border-border">
+        <div class="flex justify-center mb-4">
+          <div class="ui-segmented">
+            <% [
+              [ "device_type", "Devices",  true ],
+              [ "browser_name", "Browsers", false ],
+              [ "os_name",     "OS",       false ]
+            ].each do |key, label, default_active| %>
+              <button data-filter-target="deviceButton"
+                      data-filter="<%= key %>"
+                      data-action="click->filter#showDevices"
+                      <%= 'data-state="active"'.html_safe if default_active %>
+                      class="ui-segmented-option">
+                <%= label %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <div class="relative h-64 w-full">
+          <div data-controller="devices"
+               id="devices-chart"
+               data-devices-data-value="<%= @chart_data[:devices].to_json %>"
+               class="w-full h-full"></div>
+        </div>
+      </div>
+
+      <!-- Geographic Bar Chart with Geography Filters -->
+      <div class="pt-4 border-t border-border">
+        <div class="flex justify-center mb-4">
+          <div class="ui-segmented">
+            <% [
+              [ "country",     "Countries", true ],
+              [ "subdivision", "Regions",   false ],
+              [ "city",        "Cities",    false ]
+            ].each do |key, label, default_active| %>
+              <button data-filter-target="geoButton"
+                      data-filter="<%= key %>"
+                      data-action="click->filter#showGeo"
+                      <%= 'data-state="active"'.html_safe if default_active %>
+                      class="ui-segmented-option">
+                <%= label %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+        <div class="relative h-64 w-full">
+          <div data-controller="geo"
+               id="geo-chart"
+               data-geo-data-value="<%= @chart_data[:geo].to_json %>"
+               class="w-full h-full"></div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <%= render "ui/empty_state",
+          title: "No visits yet",
+          body: "Start sharing your link to see analytics here." %>
+  <% end %>
+<% end %>

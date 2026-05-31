@@ -1,0 +1,30 @@
+<%# locals: (icon:, label:, variant: :ghost, href: nil, method: nil, confirm: nil, type: "button", extra_class: nil, form_options: {}) %>
+<%
+  variant_class = case variant.to_sym
+  when :primary then "ui-btn-primary"
+  when :secondary then "ui-btn-secondary"
+  when :ghost then "ui-btn-ghost"
+  when :danger then "ui-btn-danger"
+  when :danger_outline then "ui-btn-danger-outline"
+  else "ui-btn-ghost"
+  end
+  classes = [ variant_class, "h-9 w-9 px-0", extra_class ].compact.join(" ")
+%>
+
+<% if href.present? && method.blank? %>
+  <%= link_to href, class: classes, "aria-label": label, title: label do %>
+    <%= render "shared/svg/#{icon}", class: "w-4 h-4" %>
+  <% end %>
+<% elsif href.present? %>
+  <%= button_to href, method: method,
+        class: classes,
+        "aria-label": label,
+        title: label,
+        form: form_options.deep_merge(data: { turbo_confirm: confirm }.compact) do %>
+    <%= render "shared/svg/#{icon}", class: "w-4 h-4" %>
+  <% end %>
+<% else %>
+  <button type="<%= type %>" class="<%= classes %>" aria-label="<%= label %>" title="<%= label %>">
+    <%= render "shared/svg/#{icon}", class: "w-4 h-4" %>
+  </button>
+<% end %>

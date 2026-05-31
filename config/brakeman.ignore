@@ -1,0 +1,73 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "f8b743e17dd32039854dead5004f2eccf2aa6219bd796e638fcfbec8e5a81231",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/links/show.html.erb",
+      "line": 126,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "Current.user.workspaces.find_by(:id => params[:workspace_id]).links.find_by(:slug => params[:id]).qr_code",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "LinksController",
+          "method": "show",
+          "line": 40,
+          "file": "app/controllers/links_controller.rb",
+          "rendered": {
+            "name": "links/show",
+            "file": "app/views/links/show.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "links/show"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        79
+      ],
+      "note": "QR code is SVG markup generated server-side by the application (rqrcode gem), not user input. Safe to render unescaped."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "6aa7ffa322545773fc952cb9d1d3ab5b1228e9c1bb51bcaecb43bac99f556689",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/layouts/application.html.erb",
+      "line": 17,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "AppConfig.shared.admin_scripts",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "AccountController",
+          "method": "edit_password",
+          "line": 3,
+          "file": "app/controllers/account_controller.rb",
+          "rendered": {
+            "name": "layouts/application",
+            "file": "app/views/layouts/application.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "layouts/application"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        79
+      ],
+      "note": "admin_scripts is set only by site admins via /admin/settings; intentional raw HTML/script tags for analytics snippets."
+    }
+  ],
+  "brakeman_version": "8.0.4"
+}

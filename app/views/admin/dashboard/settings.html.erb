@@ -1,0 +1,224 @@
+<div class="mx-auto max-w-2xl space-y-6 px-4 sm:px-6">
+  <div class="space-y-2">
+    <h2 class="text-2xl font-semibold tracking-tight text-foreground">Site Settings</h2>
+    <p class="text-sm text-muted-foreground">
+      Manage your application and email configuration.
+    </p>
+  </div>
+
+  <%= form_with url: admin_settings_path, method: :patch, class: "space-y-6" do |form| %>
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold text-foreground mb-4">Application</h3>
+
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <%= form.label :app_name, "App Name", class: "ui-label" %>
+          <%= form.text_field :app_name, value: @config.app_name, placeholder: "ugo", class: "ui-input" %>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :app_domain, "Domain", class: "ui-label" %>
+          <%= form.text_field :app_domain, value: @config.app_domain, required: true, placeholder: "links.example.com", class: "ui-input" %>
+          <p class="ui-hint">The domain where this app is accessible.</p>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold text-foreground">Email (SMTP)</h3>
+      <p class="ui-hint mb-4 mt-1">Used for sending password resets, invitations, and notifications.</p>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <%= form.label :smtp_address, "SMTP Server", class: "ui-label" %>
+            <%= form.text_field :smtp_address, value: @config.smtp_address, placeholder: "smtp.example.com", class: "ui-input" %>
+          </div>
+
+          <div class="space-y-2">
+            <%= form.label :smtp_port, "Port", class: "ui-label" %>
+            <%= form.text_field :smtp_port, value: @config.smtp_port, placeholder: "587",
+                  inputmode: "numeric", pattern: "[0-9]*", class: "ui-input" %>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :smtp_username, "Username", class: "ui-label" %>
+          <%= form.text_field :smtp_username, value: @config.smtp_username, placeholder: "user@example.com", class: "ui-input" %>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :smtp_password, "Password", class: "ui-label" %>
+          <%= form.password_field :smtp_password,
+                placeholder: @config.smtp_password.present? ? "••••••••  (leave blank to keep current)" : "Enter SMTP password",
+                class: "ui-input" %>
+          <% if @config.smtp_password.present? %>
+            <p class="ui-hint">Leave blank to keep the current password.</p>
+          <% end %>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :smtp_from_email, "From Address", class: "ui-label" %>
+          <%= form.email_field :smtp_from_email, value: @config.smtp_from_email, placeholder: "noreply@example.com", class: "ui-input" %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold text-foreground mb-1">Deep linking (mobile apps)</h3>
+      <p class="ui-hint mb-4 mt-1">
+        Bounce in-app browser traffic through <code><%= deep_link_bounce_example_url(@config) %></code>…
+        so Universal Links and Android App Links can open your native app. Configure Apple and Google verification files for this hostname.
+      </p>
+
+      <div class="space-y-4">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <%= form.check_box :deep_link_enabled, checked: @config.deep_link_enabled, class: "ui-checkbox mt-0.5" %>
+          <div>
+            <span class="text-sm font-medium text-foreground">Enable deep link bounce</span>
+            <p class="ui-hint">When enabled, <code>/r?r=https://destination</code> returns an HTTP redirect. The homepage at <code>/</code> is unchanged.</p>
+          </div>
+        </label>
+
+        <div class="space-y-2">
+          <%= form.label :deep_link_ios_app_ids, "iOS App IDs", class: "ui-label" %>
+          <%= form.text_area :deep_link_ios_app_ids, value: @config.deep_link_ios_app_ids, rows: 3,
+                class: "ui-textarea font-mono text-sm",
+                placeholder: "ABCDE12345.com.example.app" %>
+          <p class="ui-hint">One Team ID + bundle ID per line or space-separated. Served at <code>/.well-known/apple-app-site-association</code>.</p>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :deep_link_android_asset_links, "Android asset links (JSON)", class: "ui-label" %>
+          <%= form.text_area :deep_link_android_asset_links, value: @config.deep_link_android_asset_links, rows: 6,
+                class: "ui-textarea font-mono text-sm",
+                placeholder: '[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"com.example.app","sha256_cert_fingerprints":["AA:BB:..."]}}]' %>
+          <p class="ui-hint">Served at <code>/.well-known/assetlinks.json</code> when valid JSON is provided.</p>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :deep_link_allowed_domains, "Allowed destination domains", class: "ui-label" %>
+          <%= form.text_field :deep_link_allowed_domains, value: @config.deep_link_allowed_domains,
+                class: "ui-input",
+                placeholder: "example.com app.example.com" %>
+          <p class="ui-hint">Optional. When set, only these hosts may appear in <code>?r=</code>. Leave blank to allow any https destination (recommended only for self-hosted).</p>
+        </div>
+
+        <div class="space-y-2">
+          <%= form.label :deep_link_default_destination, "Default destination URL", class: "ui-label" %>
+          <%= form.url_field :deep_link_default_destination, value: @config.deep_link_default_destination,
+                class: "ui-input",
+                placeholder: "https://example.com/home" %>
+          <p class="ui-hint">Optional. When set, a bare <code>GET /r</code> redirects here (no <code>?r=</code> required).</p>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold text-foreground mb-1">Head scripts (analytics)</h3>
+      <p class="ui-hint mb-4 mt-1">
+        Injected near the top of every page layout. Use for Plausible, Google Analytics, or similar.
+        This only applies for the current dahboard in <code><%= request.domain %></code> and
+        doesn't relate to each link's click analytics.
+      </p>
+
+      <div class="space-y-2">
+        <%= form.label :admin_scripts, "HTML / script tags", class: "ui-label" %>
+        <%= form.text_area :admin_scripts, value: @config.admin_scripts, rows: 6,
+              class: "ui-textarea font-mono text-sm",
+              placeholder: '<script defer data-domain="example.com" src="https://plausible.io/js/script.js"></script>' %>
+      </div>
+    <% end %>
+
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold text-foreground">Error Tracking (Honeybadger)</h3>
+      <p class="ui-hint mb-4 mt-1">
+        Optional. Leave the API key blank to keep the current value. Changes take effect after the next deploy or container restart.
+      </p>
+
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <%= form.label :honeybadger_api_key, "API Key", class: "ui-label" %>
+          <%= form.password_field :honeybadger_api_key,
+                placeholder: @config.honeybadger_api_key.present? ? "••••••••  (leave blank to keep current)" : "Enter Honeybadger API key",
+                class: "ui-input",
+                autocomplete: "off" %>
+        </div>
+
+        <label class="flex items-start gap-3 cursor-pointer">
+          <%= check_box_tag :clear_honeybadger_api_key, "1", false, class: "ui-checkbox mt-0.5" %>
+          <div>
+            <span class="text-sm font-medium text-foreground">Remove stored API key</span>
+            <p class="ui-hint">Clears the database value so only the HONEYBADGER_API_KEY environment variable applies (if set).</p>
+          </div>
+        </label>
+      </div>
+    <% end %>
+
+    <% if AppConfig.main_app? %>
+      <%= render "ui/card" do %>
+        <h3 class="text-lg font-semibold text-foreground">Payments (Polar)</h3>
+        <p class="ui-hint mb-4 mt-1">Configure Polar for subscription billing for the hosted ugo.cr service. This is hidden from self-hosted installations.</p>
+
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <%= form.label :polar_access_token, "Access Token", class: "ui-label" %>
+            <%= form.password_field :polar_access_token,
+                  placeholder: @config.polar_access_token.present? ? "••••••••  (leave blank to keep current)" : "Enter Polar access token",
+                  class: "ui-input",
+                  autocomplete: "off" %>
+          </div>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <%= check_box_tag :clear_polar_access_token, "1", false, class: "ui-checkbox mt-0.5" %>
+            <div>
+              <span class="text-sm font-medium text-foreground">Remove stored access token</span>
+              <p class="ui-hint">Clears the database value so only POLAR_ACCESS_TOKEN in the environment applies (if set).</p>
+            </div>
+          </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <%= form.label :polar_basic_product_id, "Basic Product ID", class: "ui-label" %>
+              <%= form.text_field :polar_basic_product_id, value: @config.polar_basic_product_id, class: "ui-input" %>
+            </div>
+
+            <div class="space-y-2">
+              <%= form.label :polar_growth_product_id, "Growth Product ID", class: "ui-label" %>
+              <%= form.text_field :polar_growth_product_id, value: @config.polar_growth_product_id, class: "ui-input" %>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <%= form.label :polar_webhook_secret, "Webhook Secret", class: "ui-label" %>
+            <%= form.password_field :polar_webhook_secret,
+                  placeholder: @config.polar_webhook_secret.present? ? "••••••••  (leave blank to keep current)" : "Enter Polar webhook secret",
+                  class: "ui-input",
+                  autocomplete: "off" %>
+          </div>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <%= check_box_tag :clear_polar_webhook_secret, "1", false, class: "ui-checkbox mt-0.5" %>
+            <div>
+              <span class="text-sm font-medium text-foreground">Remove stored webhook secret</span>
+              <p class="ui-hint">Clears the database value so only POLAR_WEBHOOK_SECRET in the environment applies (if set).</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            <%= form.check_box :polar_sandbox, checked: @config.polar_sandbox, class: "ui-checkbox mt-0.5" %>
+            <div>
+              <span class="text-sm font-medium text-foreground">Sandbox mode</span>
+              <p class="ui-hint">Use Polar's sandbox environment for testing</p>
+            </div>
+          </label>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="flex gap-3 max-w-96 mx-auto">
+      <%= link_to "Cancel", admin_root_path, class: "ui-btn-secondary ui-btn-md flex-1" %>
+      <%= form.submit "Save Settings", class: "ui-btn-primary ui-btn-md flex-1" %>
+    </div>
+  <% end %>
+</div>

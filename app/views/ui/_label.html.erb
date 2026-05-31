@@ -1,0 +1,6 @@
+<%# locals: (form: nil, field: nil, text:, hint: nil, for_id: nil) %>
+<% if form && field %>
+  <%= form.label field, text, class: "ui-label" %>
+<% else %>
+  <label <%= "for=\"#{for_id}\"".html_safe if for_id %> class="ui-label"><%= text %></label>
+<% end %>

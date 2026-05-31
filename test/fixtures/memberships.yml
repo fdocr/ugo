@@ -1,0 +1,20 @@
+# Memberships connect users to workspaces with roles
+# Roles: member: 0, admin: 1
+
+# User one is admin of workspace one
+one_admin:
+  user: one
+  workspace: one
+  role: 1
+
+# User two is admin of workspace two
+two_admin:
+  user: two
+  workspace: two
+  role: 1
+
+# User two is a member of workspace one (for testing multi-user workspaces)
+two_member_of_one:
+  user: two
+  workspace: one
+  role: 0

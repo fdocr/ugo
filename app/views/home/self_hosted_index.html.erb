@@ -1,0 +1,20 @@
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+  <div class="max-w-md w-full text-center space-y-8">
+    <div class="space-y-3">
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground/90">
+        <%= AppConfig.shared.app_name %>
+      </h1>
+      <p class="text-muted-foreground">
+        Your team's link shortener. Shorten URLs, track analytics, and manage your links.
+      </p>
+    </div>
+
+    <div>
+      <%= link_to "Sign In", new_session_path, class: "ui-btn-primary ui-btn-lg" %>
+    </div>
+
+    <p class="text-xs text-muted-foreground">
+      Powered by <%= link_to "ugo.cr", "https://ugo.cr", target: "_blank", rel: "noopener noreferrer", class: "ui-btn-link" %>
+    </p>
+  </div>
+</div>

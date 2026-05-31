@@ -1,0 +1,80 @@
+<%= turbo_frame_tag "admin-workspaces" do %>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+    <%= render "ui/search_field",
+          url: admin_workspaces_path,
+          value: @search,
+          placeholder: "Search by owner email...",
+          frame: "admin-workspaces",
+          hidden_fields: { sort: @sort },
+          clear_url: admin_workspaces_path(sort: @sort),
+          clear_visible: @search.present? %>
+
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-muted-foreground">Sort:</span>
+      <%= render "ui/segmented",
+            frame: "admin-workspaces",
+            options: [
+              { label: "Recent",     href: admin_workspaces_path(sort: "recent", search: @search), active: @sort == "recent" },
+              { label: "Most Links", href: admin_workspaces_path(sort: "links",  search: @search), active: @sort == "links" }
+            ] %>
+    </div>
+  </div>
+
+  <%= render "ui/table", headers: [ "Workspace", "Owner", "Plan", "Links", "Created", "Actions" ] do %>
+    <% if @workspaces.any? %>
+      <% @workspaces.each do |workspace| %>
+        <tr class="border-b border-border last:border-0 hover:bg-accent/50">
+          <td class="py-3 px-2">
+            <span class="font-medium text-foreground"><%= workspace.name %></span>
+          </td>
+          <td class="py-3 px-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-muted-foreground"><%= workspace.user.email %></span>
+              <% if workspace.user.site_admin? %>
+                <%= render "ui/badge", text: "Admin", tone: :info %>
+              <% end %>
+              <% if workspace.user.banned? %>
+                <%= render "ui/badge", text: "Banned", tone: :danger %>
+              <% end %>
+            </div>
+          </td>
+          <td class="py-3 px-2">
+            <%= render "ui/badge", text: workspace.plan.capitalize, tone: badge_tone_for_plan(workspace.plan) %>
+          </td>
+          <td class="py-3 px-2">
+            <span class="text-muted-foreground"><%= workspace.links.size %></span>
+          </td>
+          <td class="py-3 px-2 text-muted-foreground">
+            <%= workspace.created_at.strftime("%b %d, %Y") %>
+          </td>
+          <td class="py-3 px-2">
+            <% unless workspace.user.site_admin? %>
+              <% if workspace.user.banned? %>
+                <%= button_to "Unban", admin_unban_user_path(workspace.user),
+                      method: :post,
+                      form: { data: { turbo_confirm: "Unban #{workspace.user.email}? This will re-enable all their links.", turbo_frame: "_top" } },
+                      class: "ui-btn-secondary ui-btn-xs text-success-700 border-success-200 hover:bg-success-50" %>
+              <% else %>
+                <%= button_to "Ban", admin_ban_user_path(workspace.user),
+                      method: :post,
+                      form: { data: { turbo_confirm: "Ban #{workspace.user.email}? This will terminate all sessions and disable all their links.", turbo_frame: "_top" } },
+                      class: "ui-btn-danger ui-btn-xs" %>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr>
+        <td colspan="6" class="py-8 text-center text-muted-foreground">
+          No workspaces found<%= " matching \"#{@search}\"" if @search.present? %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/pagination",
+        pagy: @pagy,
+        frame: "admin-workspaces",
+        path: ->(p) { admin_workspaces_path(p.merge(sort: @sort, search: @search)) } %>
+<% end %>

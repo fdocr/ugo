@@ -1,0 +1,15 @@
+<%# locals: (headers:) %>
+<div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border">
+        <% headers.each do |header| %>
+          <th class="text-left py-3 px-2 font-medium text-muted-foreground"><%= header %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <%= yield %>
+    </tbody>
+  </table>
+</div>

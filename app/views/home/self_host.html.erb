@@ -1,0 +1,203 @@
+<div class="min-h-screen">
+  <!-- Hero -->
+  <div class="container mx-auto px-4 py-16 sm:py-24">
+    <div class="max-w-2xl mx-auto text-center">
+      <div class="w-14 h-14 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-6 text-success-600">
+        <%= render "shared/svg/server", class: "w-7 h-7" %>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-foreground/90 mb-6">
+        Self-Host ugo
+      </h1>
+      <p class="text-lg text-muted-foreground mb-4">
+        Self-hosting means running ugo on your own server instead of using our hosted service. You get full control over your data, your domain, and your infrastructure. No limits, no recurring fees, and every feature including deep linking into native apps.
+      </p>
+      <p class="text-lg text-muted-foreground">
+        If you're not comfortable managing a server, DNS, and Docker, we recommend signing up for a <%= link_to "hosted plan", pricing_path, class: "ui-btn-link" %> instead. You'll be up and running in seconds with zero configuration.
+      </p>
+    </div>
+  </div>
+
+  <!-- Walkthrough -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-2xl sm:text-3xl font-bold text-foreground/90 mb-4 text-center">Getting started</h2>
+        <p class="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+          ugo is deployed with <%= link_to "Once", "https://github.com/basecamp/once", target: "_blank", rel: "noopener noreferrer", class: "ui-btn-link" %> using a pre-built Docker image published to GHCR on every release. You don't need to build anything yourself.
+        </p>
+
+        <!-- Prerequisites -->
+        <div class="mb-10">
+          <h3 class="text-xl font-semibold text-foreground mb-4">Prerequisites</h3>
+          <%= render "ui/card" do %>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="text-success-600 flex-shrink-0 mt-0.5">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground">A server (Ubuntu 22.04+ recommended) with SSH access</span>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-success-600 flex-shrink-0 mt-0.5">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground">A domain name with DNS pointed at your server's IP address</span>
+              </div>
+            </div>
+            <p class="text-sm text-muted-foreground mt-4">No local toolchain is required. Once handles everything on the server.</p>
+          <% end %>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="mb-10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
+            <h3 class="text-xl font-semibold text-foreground">Install Once and ugo</h3>
+          </div>
+          <%= render "ui/card" do %>
+            <p class="text-sm text-muted-foreground mb-4">SSH into your server and run:</p>
+            <div class="rounded-md bg-page border border-border p-4 font-mono text-sm text-foreground overflow-x-auto">
+              curl https://get.once.com | sh
+            </div>
+            <p class="text-sm text-muted-foreground mt-4 mb-3">
+              Once will install Docker if needed, register its background service, and launch the interactive setup. When prompted:
+            </p>
+            <ol class="space-y-2 text-sm text-foreground list-decimal list-inside">
+              <li>Choose <strong>"Enter a Docker image path"</strong></li>
+              <li>Enter: <code class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">ghcr.io/fdocr/ugo</code></li>
+              <li>Enter the hostname you want to use (e.g. <code class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">links.example.com</code>)</li>
+              <li>Make sure the domain's DNS is already pointed at your server's IP address, otherwise the setup will fail</li>
+            </ol>
+            <p class="text-sm text-muted-foreground mt-3">
+              Once will pull the image, boot the application, and provision an SSL certificate via Let's Encrypt.
+            </p>
+          <% end %>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="mb-10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
+            <h3 class="text-xl font-semibold text-foreground">Complete the setup wizard</h3>
+          </div>
+          <%= render "ui/card" do %>
+            <p class="text-sm text-muted-foreground mb-4">
+              Visit your domain in a browser. You'll see the setup wizard where you'll configure:
+            </p>
+            <div class="space-y-3">
+              <% [
+                { label: "Setup code", desc: "Find this in the container logs — run <code class=\"font-mono text-xs\">docker ps</code> to get the container ID, then <code class=\"font-mono text-xs\">docker logs &lt;container_id&gt;</code> and look for the <code class=\"font-mono text-xs\">SETUP CODE</code> line." },
+                { label: "App name & domain", desc: "Choose a name and confirm the domain for your instance." },
+                { label: "Admin email & password", desc: "Create the first admin account." },
+                { label: "SMTP settings", desc: "Optional — needed for email notifications." }
+              ].each do |item| %>
+                <div class="flex items-start gap-3">
+                  <span class="text-primary-600 flex-shrink-0 mt-0.5">
+                    <%= render "shared/svg/gear", class: "w-4 h-4" %>
+                  </span>
+                  <div>
+                    <span class="text-sm font-medium text-foreground"><%= item[:label] %></span>
+                    <p class="text-xs text-muted-foreground mt-0.5"><%= item[:desc].html_safe %></p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <p class="text-sm text-muted-foreground mt-4">After completing the wizard, your ugo instance is ready to use.</p>
+          <% end %>
+        </div>
+
+        <!-- Automatic updates -->
+        <div class="mb-10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
+            <h3 class="text-xl font-semibold text-foreground">Automatic updates & backups</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <%= render "ui/card" do %>
+              <div class="w-10 h-10 rounded-full bg-info-100 flex items-center justify-center mb-3 text-info-600">
+                <%= render "shared/svg/clock", class: "w-5 h-5" %>
+              </div>
+              <h4 class="font-semibold mb-1 text-foreground">Updates</h4>
+              <p class="text-sm text-muted-foreground">
+                Once automatically checks for new image versions and applies updates with zero downtime. The <code class="font-mono text-xs">latest</code> tag is updated with every release.
+              </p>
+            <% end %>
+            <%= render "ui/card" do %>
+              <div class="w-10 h-10 rounded-full bg-success-100 flex items-center justify-center mb-3 text-success-600">
+                <%= render "shared/svg/lock", class: "w-5 h-5" %>
+              </div>
+              <h4 class="font-semibold mb-1 text-foreground">Backups</h4>
+              <p class="text-sm text-muted-foreground">
+                Once handles backups automatically. ugo includes SQLite backup hooks that create consistent database snapshots. Trigger a manual backup anytime with <code class="font-mono text-xs">once backup</code>.
+              </p>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Useful commands -->
+        <div class="mb-10">
+          <h3 class="text-xl font-semibold text-foreground mb-4">Useful commands</h3>
+          <%= render "ui/card" do %>
+            <div class="rounded-md bg-page border border-border p-4 font-mono text-sm text-foreground overflow-x-auto space-y-1">
+              <div><span class="text-muted-foreground select-none">$ </span>once<span class="text-muted-foreground ml-12"> # Open the Once dashboard (TUI)</span></div>
+              <div><span class="text-muted-foreground select-none">$ </span>once list<span class="text-muted-foreground ml-4"></span></div>
+              <div><span class="text-muted-foreground select-none">$ </span>once update<span class="text-muted-foreground ml-2"></span></div>
+              <div><span class="text-muted-foreground select-none">$ </span>once backup<span class="text-muted-foreground ml-2"></span></div>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Env reference -->
+        <div>
+          <h3 class="text-xl font-semibold text-foreground mb-4">Environment variables</h3>
+          <p class="text-sm text-muted-foreground mb-4">
+            Most configuration is handled through the setup wizard and admin panel. For Cloudflare (orange cloud), set <code class="text-xs">TRUSTED_PROXIES_EXTRA</code> in Once → Settings (<kbd>s</kbd>) → Environment (<kbd>v</kbd>). See <code class="text-xs">docs/self-hosting.md</code> in the repo for the step-by-step walkthrough.
+          </p>
+          <%= render "ui/card" do %>
+            <%= render "ui/table", headers: [ "Variable", "Default", "Description" ] do %>
+              <% [
+                [ "SECRET_KEY_BASE", "Auto (Once)", "Session signing and CSRF protection" ],
+                [ "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY", "Auto (first boot)", "Encrypts sensitive fields at rest" ],
+                [ "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY", "Auto (first boot)", "Deterministic encryption lookups" ],
+                [ "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT", "Auto (first boot)", "Salt for key derivation" ],
+                [ "WEB_CONCURRENCY", "1", "Puma worker processes" ],
+                [ "RAILS_MAX_THREADS", "3", "Puma threads per worker" ],
+                [ "JOB_CONCURRENCY", "1", "Solid Queue worker processes" ],
+                [ "SOLID_QUEUE_THREADS", "3", "Solid Queue threads per worker" ],
+                [ "DB_POOL", "auto", "Optional; defaults to max of thread env vars" ],
+                [ "RAILS_LOG_LEVEL", "info", "Log verbosity" ],
+                [ "TRUSTED_PROXIES_EXTRA", "Unset", "CDN CIDRs when behind Cloudflare; run bin/rails trusted_proxies:cloudflare" ]
+              ].each do |var, default_val, desc| %>
+                <tr class="border-b border-border last:border-0 hover:bg-accent/50">
+                  <td class="py-3 px-2 font-mono text-xs text-foreground"><%= var %></td>
+                  <td class="py-3 px-2 text-sm text-muted-foreground"><%= default_val %></td>
+                  <td class="py-3 px-2 text-sm text-muted-foreground"><%= desc %></td>
+                </tr>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-3xl font-bold text-foreground/90 mb-4">Prefer zero configuration?</h2>
+        <p class="text-muted-foreground mb-8">
+          A <%= link_to "ugo.cr account", pricing_path, class: "ui-btn-link" %> gives you everything you need out of the box: No servers, no DNS, no maintenance. The Dedicated plan offers the same privacy and unlimited usage as self-hosting (within the hardware limits of the instance) without the hassle.
+        </p>
+
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "View Hosted Plans", pricing_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%= render "shared/footer" %>
+</div>

@@ -1,0 +1,112 @@
+<div class="max-w-4xl mx-auto space-y-6 px-4 sm:px-6">
+  <% if @subscription&.past_due? %>
+    <%= render "ui/banner", tone: :warning, title: "Payment past due" do %>
+      <p class="text-sm mt-1 opacity-90">
+        We were unable to process your last payment.
+        <%= link_to "Update your payment method", manage_workspace_billing_path(@workspace), class: "font-medium underline hover:no-underline" %>
+        to avoid losing access to your <%= @workspace.plan.titleize %> plan.
+      </p>
+    <% end %>
+  <% end %>
+
+  <% if @workspace.ugo_access_blocked? %>
+    <%= render "ui/banner", tone: :danger,
+          title: "Subscription required",
+          body: "Your trial has ended and this workspace is paused. Choose Basic or Growth below to restore access." %>
+  <% elsif @workspace.trial? %>
+    <%= render "workspace/trial_banner", workspace: @workspace %>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Plans</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <% plans = [
+        { key: "basic",  name: "Basic",  price: "$9",  links: "1,000", events: "10,000", retention: "3 months", digests: "Weekly & monthly" },
+        { key: "growth", name: "Growth", price: "$19", links: "3,000", events: "50,000", retention: "3 months", digests: "Weekly & monthly" }
+      ] %>
+      <% plans.each do |plan| %>
+        <% is_trial_basic = plan[:key] == "basic" && @workspace.trial? %>
+        <% is_paid_tier = @workspace.paying? && @workspace.plan == plan[:key] %>
+        <% highlighted = is_trial_basic || is_paid_tier %>
+        <div class="rounded-md border p-4 <%= highlighted ? "border-primary-600 border-2 bg-primary-50/30" : "border-border" %>">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold text-foreground"><%= plan[:name] %></h4>
+            <% if is_trial_basic %>
+              <%= render "ui/badge", text: "Trial", tone: :warning %>
+            <% elsif is_paid_tier %>
+              <%= render "ui/badge", text: "Current", tone: :primary %>
+            <% end %>
+          </div>
+          <div class="flex items-baseline gap-1 mb-3">
+            <span class="text-2xl font-bold text-foreground"><%= plan[:price] %></span>
+            <span class="text-sm text-muted-foreground">/month</span>
+          </div>
+          <div class="space-y-1.5 text-sm text-muted-foreground">
+            <p><strong class="text-foreground"><%= plan[:links] %></strong> links</p>
+            <p><strong class="text-foreground"><%= plan[:events] %></strong> events/mo</p>
+            <p><strong class="text-foreground"><%= plan[:retention] %></strong> retention</p>
+            <p><strong class="text-foreground"><%= plan[:digests] %></strong> email digests</p>
+          </div>
+
+          <% if workspace_admin? %>
+            <div class="mt-4 space-y-2">
+              <% if @workspace.paying? && @workspace.growth? %>
+                <% if plan[:key] == "growth" %>
+                  <span class="ui-btn-secondary ui-btn-sm w-full text-muted-foreground cursor-default">Your plan</span>
+                <% end %>
+              <% elsif @workspace.paying? && @workspace.basic? %>
+                <% if plan[:key] == "basic" %>
+                  <span class="ui-btn-secondary ui-btn-sm w-full text-muted-foreground cursor-default">Your plan</span>
+                <% elsif plan[:key] == "growth" %>
+                  <%= link_to "Upgrade to Growth",
+                        new_workspace_checkout_path(@workspace, plan: :growth),
+                        class: "ui-btn-primary ui-btn-sm w-full",
+                        data: { turbo_frame: "_top" } %>
+                <% end %>
+              <% else %>
+                <%= link_to (plan[:key] == "basic" ? "Subscribe to Basic" : "Subscribe to Growth"),
+                      new_workspace_checkout_path(@workspace, plan: plan[:key]),
+                      class: "ui-btn-primary ui-btn-sm w-full",
+                      data: { turbo_frame: "_top" } %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if (@subscription&.active? || @subscription&.past_due?) && @subscription.polar_customer_id.present? %>
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold mb-2 text-foreground">Manage billing</h3>
+      <p class="text-sm text-muted-foreground mb-4">
+        Update your payment method, view invoices, or manage your subscription details on the billing portal.
+      </p>
+      <%= link_to "Manage billing",
+            manage_workspace_billing_path(@workspace),
+            class: "ui-btn-primary ui-btn-md",
+            data: { turbo_frame: "_top" } %>
+    <% end %>
+  <% end %>
+
+  <% if @payments.any? %>
+    <%= render "ui/card" do %>
+      <h3 class="text-lg font-semibold mb-4 text-foreground">Payment History</h3>
+      <%= render "ui/table", headers: [ "Date", "Amount", "Status" ] do %>
+        <% @payments.each do |payment| %>
+          <tr class="border-b border-border last:border-0">
+            <td class="py-3 px-2 text-foreground"><%= payment.paid_at&.strftime("%b %d, %Y") || "—" %></td>
+            <td class="py-3 px-2 text-foreground">$<%= format("%.2f", payment.amount_dollars) %> <%= payment.currency %></td>
+            <td class="py-3 px-2">
+              <% if payment.succeeded? %>
+                <%= render "ui/badge", text: "Paid", tone: :success %>
+              <% else %>
+                <%= render "ui/badge", text: "Failed", tone: :danger %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,14 @@
+Payment failed
+==============
+
+Hi there,
+
+We were unable to process the payment of $<%= format("%.2f", @subscription.amount_dollars) %> <%= @subscription.currency %> for the "<%= @workspace.name %>" workspace.
+
+Please update your payment method to avoid losing access to your Basic plan features. We'll retry the charge automatically, but after multiple failures your workspace will be downgraded to the Free plan.
+
+Update payment method: <%= @manage_url %>
+
+View Billing: <%= @billing_url %>
+
+If you believe this is an error, please contact us at hello@ugo.cr.

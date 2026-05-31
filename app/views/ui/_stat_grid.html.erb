@@ -1,0 +1,12 @@
+<%# locals: (cols: 4, gap: 6) %>
+<%
+  cols_class = case cols
+  when 2 then "grid-cols-2"
+  when 3 then "grid-cols-2 sm:grid-cols-3"
+  when 5 then "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+  else "grid-cols-2 sm:grid-cols-4"
+  end
+%>
+<div class="grid <%= cols_class %> gap-<%= gap %>">
+  <%= yield %>
+</div>

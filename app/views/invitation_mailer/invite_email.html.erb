@@ -1,0 +1,34 @@
+<h3>You've been invited to <%= @workspace.name %></h3>
+
+<p><strong><%= @invited_by.email %></strong> has invited you to join their workspace on ugo.cr as a <strong><%= @invitation.role %></strong>.</p>
+
+<p>Sign in to your existing account or create a new one to accept the invitation.</p>
+
+<!--[if mso]>
+<table role="presentation" width="100%"><tr><td style="text-align: center; padding: 30px 0;">
+<![endif]-->
+<div style="text-align: center; margin: 30px 0;">
+  <!--[if mso]>
+  <table role="presentation" align="center"><tr>
+  <td style="padding: 0 8px;">
+  <![endif]-->
+  <a href="<%= @sign_in_url %>" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #255c95; color: #fff; text-decoration: none; border-radius: 0.375rem; font-weight: 500; margin: 0.5rem;">
+    Sign in
+  </a>
+  <!--[if mso]>
+  </td><td style="padding: 0 8px;">
+  <![endif]-->
+  <a href="<%= @sign_up_url %>" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #fff; color: #255c95; text-decoration: none; border-radius: 0.375rem; font-weight: 500; border: 2px solid #255c95; margin: 0.5rem;">
+    Create account
+  </a>
+  <!--[if mso]>
+  </td></tr></table>
+  <![endif]-->
+</div>
+<!--[if mso]>
+</td></tr></table>
+<![endif]-->
+
+<p style="color: #64748b; font-size: 0.875rem;">Make sure to use this email address (<%= @invitation.email %>) when signing up to automatically join the workspace.</p>
+
+<p>Thanks,<br>ugo.cr</p>

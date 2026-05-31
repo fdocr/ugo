@@ -1,0 +1,35 @@
+<div class="mx-auto max-w-2xl space-y-6 px-4">
+  <%= form_with(url: workspace_links_path(@workspaces.first.id), class: "space-y-4", method: :post, id: "new-link-form") do |form| %>
+    <div class="space-y-2">
+      <%= form.label :workspace_id, "Workspace", class: "ui-label" %>
+      <% if @workspaces.size == 1 %>
+        <div class="ui-input-readonly"><%= @workspaces.first.name %></div>
+      <% else %>
+        <select
+          name="workspace_id"
+          id="workspace_id"
+          onchange="document.getElementById('new-link-form').action = '/workspace/' + this.value + '/links'"
+          class="ui-select">
+          <% @workspaces.each do |workspace| %>
+            <option value="<%= workspace.id %>"><%= workspace.name %></option>
+          <% end %>
+        </select>
+      <% end %>
+      <p class="ui-hint">The workspace this link will belong to</p>
+    </div>
+
+    <%= render "ui/input", form: form, field: :name, label: "Name",
+          placeholder: "January 2025 SMS campaign..." %>
+
+    <%= render "ui/input", form: form, field: :url, type: :url, label: "URL",
+          placeholder: "https://example.com" %>
+
+    <%= render "ui/textarea", form: form, field: :comments, label: "Comments",
+          placeholder: "Add notes or description...", rows: 3 %>
+
+    <div class="flex gap-3 max-w-96 mx-auto">
+      <%= link_to "Cancel", dashboard_path, class: "ui-btn-secondary ui-btn-md flex-1" %>
+      <%= form.submit "Create Link", class: "ui-btn-primary ui-btn-md flex-1" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,27 @@
+# Invitations for workspace membership
+# Roles: member: 0, admin: 1
+
+pending_invitation:
+  workspace: one
+  email: invited@example.com
+  role: 0
+  token: <%= SecureRandom.urlsafe_base64(32) %>
+  expires_at: <%= 7.days.from_now %>
+  invited_by: one
+
+expired_invitation:
+  workspace: one
+  email: expired@example.com
+  role: 0
+  token: <%= SecureRandom.urlsafe_base64(32) %>
+  expires_at: <%= 1.day.ago %>
+  invited_by: one
+
+accepted_invitation:
+  workspace: two
+  email: accepted@example.com
+  role: 1
+  token: <%= SecureRandom.urlsafe_base64(32) %>
+  expires_at: <%= 7.days.from_now %>
+  accepted_at: <%= 1.day.ago %>
+  invited_by: two

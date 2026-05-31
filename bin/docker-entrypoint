@@ -1,0 +1,40 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Auto-generate Active Record Encryption keys on first boot if not provided.
+# Keys are persisted to the storage volume so they survive container replacements.
+# Explicit env vars (e.g. from .env in local dev) take precedence.
+ENCRYPTION_KEYS_FILE="/rails/storage/.encryption_keys"
+if [ -z "${ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY}" ]; then
+  if [ -f "$ENCRYPTION_KEYS_FILE" ]; then
+    source "$ENCRYPTION_KEYS_FILE"
+  fi
+
+  # Regenerate if the file was missing, corrupt, or incomplete
+  if [ -z "${ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY}" ] || \
+     [ -z "${ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY}" ] || \
+     [ -z "${ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}" ]; then
+    export ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=$(openssl rand -hex 16)
+    export ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=$(openssl rand -hex 16)
+    export ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=$(openssl rand -hex 16)
+    printf 'export ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=%s\n' "$ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY" > "$ENCRYPTION_KEYS_FILE"
+    printf 'export ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=%s\n' "$ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY" >> "$ENCRYPTION_KEYS_FILE"
+    printf 'export ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=%s\n' "$ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT" >> "$ENCRYPTION_KEYS_FILE"
+    chmod 600 "$ENCRYPTION_KEYS_FILE"
+  fi
+fi
+
+# If running the rails server then create or migrate existing database.
+# Avoid db:prepare because it runs db:seed on a fresh database — production
+# instances should start empty and go through the setup wizard instead.
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:create 2>/dev/null || true
+  ./bin/rails db:migrate
+fi
+
+exec "${@}"

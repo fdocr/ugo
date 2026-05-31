@@ -1,0 +1,21 @@
+<%# locals: (form:, field:, type: :text, label: nil, hint: nil, placeholder: nil, value: nil, required: false, autofocus: false, autocomplete: nil, minlength: nil, maxlength: nil, inputmode: nil, pattern: nil, readonly: false) %>
+<div class="space-y-2">
+  <% if label.present? %>
+    <%= form.label field, label, class: "ui-label" %>
+  <% end %>
+  <%= form.send("#{type}_field", field,
+        value: value,
+        placeholder: placeholder,
+        required: required,
+        autofocus: autofocus,
+        autocomplete: autocomplete,
+        minlength: minlength,
+        maxlength: maxlength,
+        inputmode: inputmode,
+        pattern: pattern,
+        readonly: readonly,
+        class: "ui-input") %>
+  <% if hint.present? %>
+    <p class="ui-hint"><%= hint %></p>
+  <% end %>
+</div>

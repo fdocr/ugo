@@ -1,0 +1,16 @@
+Monthly Report - <%= @workspace.name %>
+<%= @period %>
+
+Top performing links this month:
+
+<% @top_links.each_with_index do |link, index| %>
+<%= index + 1 %>. <%= link.name.present? ? link.name : link.slug %> - <%= link.visit_count %> visits
+   <%= workspace_link_url(@workspace.id, link.slug) %>
+<% end %>
+
+View your workspace dashboard:
+<%= @workspace_url %>
+
+---
+You're receiving this because monthly digests are enabled for <%= @workspace.name %>.
+An admin can disable this in the workspace settings.

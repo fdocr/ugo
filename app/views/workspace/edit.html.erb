@@ -1,0 +1,42 @@
+<div class="mx-auto max-w-2xl space-y-6 px-4">
+  <%= form_with(model: @workspace, url: workspace_path(@workspace.id), class: "space-y-4", method: :patch) do |form| %>
+    <%= render "ui/input",
+          form: form, field: :name, label: "Workspace Name",
+          placeholder: "My Workspace",
+          hint: "A friendly name for your workspace" %>
+
+    <div class="space-y-4 pt-4 border-t border-border">
+      <div>
+        <h3 class="text-sm font-medium leading-none text-foreground">Email Digests</h3>
+        <p class="text-xs text-muted-foreground mt-2">Receive periodic email summaries of your top-performing links, delivered to all workspace members.</p>
+      </div>
+
+      <div class="space-y-3">
+        <%= render "ui/checkbox", form: form, field: :monthly_digest,
+              label: "Monthly digest",
+              description: "Summary of your top 10 links sent on the 1st of each month" %>
+
+        <% if @workspace.free? %>
+          <label class="flex items-start gap-3 cursor-not-allowed opacity-50">
+            <input type="checkbox" disabled class="ui-checkbox mt-0.5">
+            <div class="min-w-0">
+              <span class="text-sm font-medium text-foreground">Weekly digest</span>
+              <p class="text-xs text-muted-foreground">
+                Available on <%= link_to "paid plans", pricing_path, class: "ui-btn-link" %>
+              </p>
+            </div>
+          </label>
+        <% else %>
+          <%= render "ui/checkbox", form: form, field: :weekly_digest,
+                label: "Weekly digest",
+                description: "Summary of your top 10 links sent every Monday" %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex gap-3 max-w-96 mx-auto">
+      <%= link_to "Cancel", workspace_path(@workspace.id), class: "ui-btn-secondary ui-btn-md flex-1" %>
+      <%= form.submit "Update Workspace", class: "ui-btn-primary ui-btn-md flex-1" %>
+    </div>
+  <% end %>
+</div>

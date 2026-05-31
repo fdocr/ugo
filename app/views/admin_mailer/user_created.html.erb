@@ -1,0 +1,24 @@
+<h2 style="margin-top: 0;">Welcome to <%= @app_name %></h2>
+
+<p>An administrator has created an account for you. Here are your login credentials:</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+  <tr>
+    <td style="padding: 0.5rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; width: 120px;">Email</td>
+    <td style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0;"><%= @user.email %></td>
+  </tr>
+  <tr>
+    <td style="padding: 0.5rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">Password</td>
+    <td style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; font-family: monospace;"><%= @password %></td>
+  </tr>
+</table>
+
+<p>Please sign in and change your password as soon as possible.</p>
+
+<p style="margin: 1.5rem 0;">
+  <a href="<%= @login_url %>" class="button" style="display: inline-block; padding: 0.75rem 1.25rem; background-color: #255c95; color: #fff; text-decoration: none; border-radius: 0.375rem; font-weight: 500;">Sign In</a>
+</p>
+
+<p style="color: #64748b; font-size: 0.875rem;">
+  If you did not expect this email, please contact your administrator.
+</p>

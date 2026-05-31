@@ -1,0 +1,73 @@
+<div class="space-y-6 mx-auto w-full max-w-5xl px-4 sm:px-6">
+  <div>
+    <p class="text-muted-foreground">
+      Site-wide statistics and management
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-end gap-2">
+    <%= link_to admin_settings_path, class: "ui-btn-secondary ui-btn-sm" do %>
+      <%= render "shared/svg/gear", class: "w-4 h-4" %>
+      Site Settings
+    <% end %>
+    <% if self_hosted? %>
+      <%= link_to admin_new_user_path, class: "ui-btn-secondary ui-btn-sm" do %>
+        <%= render "shared/svg/user_plus", class: "w-4 h-4" %>
+        Create User
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Overview</h3>
+    <%= render "ui/stat_grid", cols: 3 do %>
+      <%= render "ui/stat", value: @stats.dig(:users, :total), label: "Total Users" %>
+      <%= render "ui/stat", value: @stats.dig(:workspaces, :total), label: "Total Workspaces" %>
+      <%= render "ui/stat", value: @stats.dig(:links, :total), label: "Total Links" %>
+    <% end %>
+    <div class="mt-4">
+      <%= render "ui/stat_grid", cols: 3 do %>
+        <%= render "ui/stat", value: number_with_delimiter(@stats.dig(:visits, :last_7_days)), label: "Link visits (7 days)" %>
+        <%= render "ui/stat", value: @stats.dig(:deep_links, :total), label: "Deep link destinations" %>
+        <%= render "ui/stat", value: number_with_delimiter(@stats.dig(:deep_link_visits, :last_7_days)), label: "Deep link bounces (7 days)" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Workspaces by Plan</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <% [
+        { value: @stats.dig(:workspaces, :free),      label: "Free",      tone: :muted   },
+        { value: @stats.dig(:workspaces, :basic),     label: "Basic",     tone: :primary },
+        { value: @stats.dig(:workspaces, :dedicated), label: "Dedicated", tone: :info    }
+      ].each do |row| %>
+        <div class="rounded-md border border-border p-4">
+          <%= render "ui/stat", value: row[:value], label: row[:label], tone: row[:tone] %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Workspaces</h3>
+    <%= turbo_frame_tag "admin-workspaces", src: admin_workspaces_path, loading: :lazy do %>
+      <%= render "ui/loading", label: "Loading workspaces…", compact: true %>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Links</h3>
+    <%= turbo_frame_tag "admin-links", src: admin_links_path, loading: :lazy do %>
+      <%= render "ui/loading", label: "Loading links…", compact: true %>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Deep link bounces</h3>
+    <p class="text-sm text-muted-foreground mb-4">Destinations reached via <code>/r?r=</code> on this hostname.</p>
+    <%= turbo_frame_tag "admin-deep-links", src: admin_deep_links_path, loading: :lazy do %>
+      <%= render "ui/loading", label: "Loading deep links…", compact: true %>
+    <% end %>
+  <% end %>
+</div>

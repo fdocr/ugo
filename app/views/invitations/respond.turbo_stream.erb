@@ -1,0 +1,11 @@
+<%= turbo_stream.update "flash" do %>
+  <%= render "shared/flash" %>
+<% end %>
+
+<%= turbo_stream.remove dom_id(@invitation, :pending) %>
+
+<% if @workspace.present? %>
+  <%= turbo_stream.prepend "workspaces_list" do %>
+    <%= render "home/workspace_item", workspace: @workspace %>
+  <% end %>
+<% end %>

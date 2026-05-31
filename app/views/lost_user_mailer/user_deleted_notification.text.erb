@@ -1,0 +1,21 @@
+Deleted User
+
+The user with the following information has deleted their account:
+
+Email: <%= @user.email %>
+Site Admin: <%= @user.site_admin? ? "Yes" : "No" %>
+Registration date: <%= I18n.l(@user.created_at, format: :long) %>
+Time as user: <%= time_ago_in_words(@user.created_at) %>
+
+Session History:
+<% if @sessions.any? %>
+  <% @sessions.each do |session| %>
+  - Date: <%= I18n.l(session.created_at, format: :long) %>
+    IP: <%= session.ip_address %>
+    Browser: <%= session.user_agent %>
+  <% end %>
+<% else %>
+No session history available.
+<% end %>
+
+This information is sent as a record before the user's data is permanently deleted.

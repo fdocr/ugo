@@ -1,0 +1,30 @@
+default: &default
+  process_visits:
+    class: ProcessVisitsJob
+    queue: visits
+    schedule: every 10 seconds
+  cleanup_visits:
+    class: CleanupVisitsJob
+    queue: visits
+    schedule: every month at 3:00
+  refresh_workspace_access:
+    class: RefreshWorkspaceAccessJob
+    queue: default
+    schedule: every 5 minutes
+  weekly_digest:
+    class: WeeklyDigestJob
+    queue: default
+    schedule: every Monday at 2am
+  monthly_digest:
+    class: MonthlyDigestJob
+    queue: default
+    schedule: every month on the 1st at 2am
+
+production:
+  <<: *default
+
+development:
+  <<: *default
+
+test:
+  <<: *default

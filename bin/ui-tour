@@ -1,0 +1,136 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# UI Tour — boots the Rails app in a dedicated `tour` environment, drives a
+# headless Chrome browser through declarative tour scripts (under tours/),
+# and renders a numbered slideshow of every screen visited.
+#
+# Run `bin/ui-tour --help` for a description of all flags.
+
+require "optparse"
+require "fileutils"
+
+ENV["RAILS_ENV"] = "tour"
+APP_PATH = File.expand_path("../config/application", __dir__)
+
+options = {
+  mode: :main_app,
+  headed: false,
+  slowmo: nil,
+  only: [],
+  output: "tmp/ui-tour",
+  open: false,
+  fail_fast: false,
+  quiet: false,
+  skip_seed: false
+}
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+    Usage: bin/ui-tour [options]
+
+    Boots the Rails app in the `tour` environment, walks through a set of
+    deterministic UI scenarios with a headless browser, and writes a numbered
+    slideshow of screenshots to tmp/ui-tour/index.html.
+
+    Each tour script lives in tours/*.rb and is a list of named scenes that
+    visit a path and call `snapshot`. Re-run any time you want a fresh visual
+    reference (e.g. before/after a UI change). Failed smoke checks capture an
+    error screenshot but do not abort unless --fail-fast is set.
+
+  BANNER
+
+  opts.on("--headed", "Show the browser window instead of running headless") do
+    options[:headed] = true
+  end
+
+  opts.on("--slowmo=SECONDS", Float,
+          "Pause N seconds between browser actions (default 0 headless, 0.4 headed)") do |v|
+    options[:slowmo] = v
+  end
+
+  opts.on("--only=PATTERN", Array,
+          "Only run tour scripts whose title contains any of these substrings (comma-sep)") do |patterns|
+    options[:only] = patterns
+  end
+
+  opts.on("--mode=MODE", %i[main_app self_hosted],
+          "Application mode to seed and screenshot: main_app (default) or self_hosted") do |mode|
+    options[:mode] = mode
+  end
+
+  opts.on("--output=DIR", "Where to write screenshots and the slideshow (default tmp/ui-tour)") do |dir|
+    options[:output] = dir
+  end
+
+  opts.on("--open", "Open the resulting slideshow in your default browser when done") do
+    options[:open] = true
+  end
+
+  opts.on("--fail-fast", "Stop on the first scene failure instead of capturing an error and continuing") do
+    options[:fail_fast] = true
+  end
+
+  opts.on("--skip-seed", "Reuse the existing tour DB instead of wiping and reseeding it") do
+    options[:skip_seed] = true
+  end
+
+  opts.on("-q", "--quiet", "Suppress per-scene log output") do
+    options[:quiet] = true
+  end
+
+  opts.on("-h", "--help", "Show this help message and exit") do
+    puts opts
+    exit
+  end
+end
+parser.parse!(ARGV)
+
+# Sensible default for slowmo when running headed so a human can follow along.
+options[:slowmo] ||= options[:headed] ? 0.4 : 0.0
+
+unless options[:quiet]
+  puts "ugo UI Tour"
+  puts "  mode:    #{options[:mode]}"
+  puts "  driver:  #{options[:headed] ? "headed Chrome" : "headless Chrome"} (slowmo=#{options[:slowmo]}s)"
+  puts "  output:  #{options[:output]}"
+  puts "  scripts: #{options[:only].any? ? options[:only].join(", ") : "all"}"
+  puts
+end
+
+require_relative "../config/boot"
+require "rails"
+require APP_PATH
+Rails.application.require_environment!
+
+# Prepare the tour DB. We treat it like an ephemeral fixture: blow it away on
+# every run unless --skip-seed is used. This keeps screenshots reproducible.
+unless options[:skip_seed]
+  unless options[:quiet]
+    puts "Resetting tour database..."
+  end
+  ActiveRecord::Base.connection_pool.disconnect!
+  %w[storage/tour.sqlite3 storage/tour_cache.sqlite3 storage/tour_queue.sqlite3].each do |f|
+    path = File.expand_path("../#{f}", __dir__)
+    FileUtils.rm_f(path)
+    FileUtils.rm_f("#{path}-shm")
+    FileUtils.rm_f("#{path}-wal")
+  end
+
+  # Run all migrations on each database (primary, cache, queue) by shelling out
+  # to bin/rails. We deliberately skip db:seed (the default db/seeds.rb is for
+  # the development DB) — UiTour::Fixtures owns the tour fixture data.
+  ENV["RAILS_ENV"] = "tour"
+  rails_bin = File.expand_path("rails", __dir__)
+  unless system(rails_bin, "db:create", "db:migrate")
+    abort "Tour DB migration failed."
+  end
+
+  # Reload the Rails connection now that we've shelled out and changed files.
+  ActiveRecord::Base.establish_connection(:tour)
+end
+
+require_relative "../lib/ui_tour"
+UiTour::Fixtures.seed!(mode: options[:mode]) unless options[:skip_seed]
+
+UiTour::Runner.new(options).run!

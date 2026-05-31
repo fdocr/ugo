@@ -1,0 +1,59 @@
+<% if link.url.present? %>
+  <div data-controller="utm-builder" data-utm-builder-url-value="<%= link.url %>">
+    <div class="space-y-6">
+      <div class="space-y-2">
+        <label class="ui-label">Base URL</label>
+        <div class="ui-input-readonly truncate"><%= link.url.split("?").first %></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <% [
+          { id: "utm_source",   label: "utm_source",   placeholder: "e.g. google, newsletter, twitter",   target: "source" },
+          { id: "utm_medium",   label: "utm_medium",   placeholder: "e.g. cpc, email, social",            target: "medium" },
+          { id: "utm_campaign", label: "utm_campaign", placeholder: "e.g. spring_sale, product_launch",   target: "campaign" },
+          { id: "utm_term",     label: "utm_term",     placeholder: "e.g. running+shoes, marketing",      target: "term" }
+        ].each do |f| %>
+          <div class="space-y-2">
+            <label for="<%= f[:id] %>" class="ui-label"><%= f[:label] %></label>
+            <input type="text" id="<%= f[:id] %>" placeholder="<%= f[:placeholder] %>"
+                   data-utm-builder-target="<%= f[:target] %>"
+                   data-action="input->utm-builder#update"
+                   class="ui-input">
+          </div>
+        <% end %>
+
+        <div class="space-y-2 lg:col-span-2">
+          <label for="utm_content" class="ui-label">utm_content</label>
+          <input type="text" id="utm_content"
+                 placeholder="e.g. logolink, textlink, hero_banner"
+                 data-utm-builder-target="content"
+                 data-action="input->utm-builder#update"
+                 class="ui-input">
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="ui-label">Preview</label>
+        <div class="w-full rounded-md border border-border bg-muted/40 px-4 py-3 text-sm break-all min-h-[48px] font-mono leading-relaxed text-foreground" data-utm-builder-target="preview">
+          <%= link.url %>
+        </div>
+      </div>
+
+      <%= form_with url: workspace_link_path(workspace.id, link.slug), method: :patch, class: "flex justify-end" do |f| %>
+        <input type="hidden" name="url" data-utm-builder-target="urlField" value="<%= link.url %>">
+        <%= f.submit "Save", class: "ui-btn-primary ui-btn-md" %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <div class="p-6 text-center">
+    <div class="flex flex-col items-center gap-3 text-muted-foreground">
+      <%= render "shared/svg/info", class: "h-8 w-8" %>
+      <p class="text-sm">No destination URL set yet. Add one below to get started.</p>
+      <%= form_with url: workspace_link_path(workspace.id, link.slug), method: :patch, class: "flex items-center gap-2 w-full max-w-lg" do |f| %>
+        <%= f.url_field :url, placeholder: "https://example.com", required: true, class: "ui-input" %>
+        <%= f.submit "Save", class: "ui-btn-primary ui-btn-md whitespace-nowrap" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

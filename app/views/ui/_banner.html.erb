@@ -1,0 +1,43 @@
+<%# locals: (tone: :info, title: nil, body: nil, icon: nil, actions: nil) %>
+<%
+  tone_class = case tone.to_sym
+  when :warning then "ui-banner-warning"
+  when :danger  then "ui-banner-danger"
+  when :success then "ui-banner-success"
+  else "ui-banner-info"
+  end
+
+  default_icon = case tone.to_sym
+  when :warning then "warning"
+  when :danger  then "warning"
+  when :success then "checkmark"
+  else "info"
+  end
+
+  resolved_icon = icon == false ? nil : (icon || default_icon)
+%>
+<div class="<%= [tone_class, "mb-4 sm:mb-5"].join(" ") %>">
+  <div class="flex items-start gap-3">
+    <% if resolved_icon %>
+      <span class="flex-shrink-0 mt-0.5">
+        <%= render "shared/svg/#{resolved_icon}", class: "w-5 h-5" %>
+      </span>
+    <% end %>
+    <div class="min-w-0 flex-1">
+      <% if title.present? %>
+        <p class="font-medium"><%= title %></p>
+      <% end %>
+      <% if body.present? %>
+        <div class="<%= title.present? ? "text-xs mt-1" : "text-sm" %> opacity-90">
+          <%= body %>
+        </div>
+      <% end %>
+      <% if block_given? %>
+        <%= yield %>
+      <% end %>
+    </div>
+    <% if actions.present? %>
+      <div class="flex items-center gap-2 flex-shrink-0"><%= actions %></div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<%# locals: (action:) %>
+<% if turnstile_required? %>
+  <% content_for :head do %>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer nonce="<%= content_security_policy_nonce %>"></script>
+  <% end %>
+  <div class="cf-turnstile"
+       data-sitekey="<%= Cloudflare::Turnstile::Rails.configuration.site_key %>"
+       data-action="<%= action %>"
+       data-theme="auto"
+       data-size="flexible"></div>
+<% end %>

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ugo — Analytics, Security &amp; Privacy Audit (2026-05-19)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d11;
+      --surface: #13161d;
+      --border: #252a36;
+      --text: #e4e8f1;
+      --muted: #7e8a9f;
+      --accent: #6ea8fe;
+      --accent-dim: #3a6fbf;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --orange: #fb923c;
+      --purple: #c084fc;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Slide infrastructure */
+    .deck { height: 100vh; display: flex; flex-direction: column; }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      padding: clamp(1rem, 3vw, 2.5rem) clamp(1.25rem, 4vw, 3.5rem);
+      display: none; flex-direction: column; justify-content: center;
+      max-width: 1140px; margin: 0 auto;
+      animation: fadeUp .3s ease;
+    }
+    .slide.active { display: flex; }
+    .slide.dense { justify-content: flex-start; padding-top: clamp(.75rem, 2vw, 1.5rem); overflow-y: auto; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Navigation bar */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .65rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      user-select: none;
+    }
+    .nav button {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: .35rem .85rem; border-radius: 6px; cursor: pointer; font-size: .82rem;
+      transition: color .15s, border-color .15s;
+    }
+    .nav button:hover { color: var(--text); border-color: var(--muted); }
+    .nav button:disabled { opacity: .3; cursor: default; }
+    .nav .counter { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* Typography */
+    h1 { font-size: clamp(1.7rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.1; margin-bottom: .6rem; }
+    h2 { font-size: clamp(1.2rem, 2.5vw, 1.7rem); font-weight: 700; color: var(--accent); margin-bottom: .75rem; letter-spacing: -.02em; }
+    h3 { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: .85rem 0 .35rem; }
+    p, li { font-size: clamp(.88rem, 1.5vw, 1.02rem); line-height: 1.55; max-width: 52rem; }
+    p { margin-bottom: .6rem; color: var(--muted); }
+    p.lead { color: var(--text); font-size: clamp(.95rem, 1.6vw, 1.08rem); }
+    ul { margin: .3rem 0 .65rem 1.15rem; }
+    li { margin-bottom: .3rem; color: var(--muted); }
+    li strong { color: var(--text); font-weight: 600; }
+    .tagline { color: var(--muted); font-size: 1rem; margin-bottom: .75rem; }
+
+    code, .mono {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: .8em;
+      background: var(--surface);
+      padding: .1em .3em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Layout helpers */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .85rem; margin-top: .3rem; max-width: 54rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .85rem; margin-top: .3rem; max-width: 54rem; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: .85rem 1rem;
+    }
+    .card h4 { font-size: .88rem; font-weight: 600; margin-bottom: .4rem; color: var(--text); }
+    .card p, .card li { font-size: .85rem; margin: 0; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: .45rem; margin: .6rem 0; max-width: 54rem; }
+    .pill {
+      font-size: .72rem; font-weight: 600;
+      padding: .2rem .55rem; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    }
+    .pill.green  { border-color: var(--green);  color: var(--green); }
+    .pill.yellow { border-color: var(--yellow); color: var(--yellow); }
+    .pill.red    { border-color: var(--red);    color: var(--red); }
+    .pill.orange { border-color: var(--orange); color: var(--orange); }
+    .pill.purple { border-color: var(--purple); color: var(--purple); }
+
+    .flow {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: clamp(.68rem, 1.1vw, .78rem);
+      line-height: 1.55; color: var(--muted);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: .85rem 1rem;
+      max-width: 54rem; white-space: pre-wrap; margin: .4rem 0;
+    }
+    .flow em { color: var(--accent); font-style: normal; }
+    .flow strong { color: var(--text); font-weight: 500; }
+
+    /* SWOT quadrant */
+    .swot {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+      margin-top: .4rem; max-width: 54rem;
+    }
+    .swot .card { padding: .75rem .9rem; }
+    .swot .card.s { border-left: 3px solid var(--green); }
+    .swot .card.w { border-left: 3px solid var(--red); }
+    .swot .card.o { border-left: 3px solid var(--accent); }
+    .swot .card.t { border-left: 3px solid var(--orange); }
+    .swot .card h4 { font-size: .82rem; margin-bottom: .3rem; }
+    .swot .card li { font-size: .8rem; }
+
+    /* Severity badges */
+    .sev {
+      display: inline-block; font-size: .68rem; font-weight: 700;
+      padding: .15rem .45rem; border-radius: 4px; vertical-align: middle;
+      margin-right: .25rem; letter-spacing: .03em;
+    }
+    .sev.crit { background: #991b1b; color: #fecaca; }
+    .sev.high { background: #9a3412; color: #fed7aa; }
+    .sev.med  { background: #854d0e; color: #fef08a; }
+    .sev.low  { background: #1e3a5f; color: #bfdbfe; }
+    .sev.info { background: #1a2332; color: #93c5fd; }
+
+    .verdict {
+      display: inline-block; font-size: .82rem; font-weight: 700;
+      padding: .3rem .7rem; border-radius: 6px; margin-top: .4rem;
+    }
+    .verdict.pass { background: #14532d; color: var(--green); border: 1px solid #166534; }
+    .verdict.warn { background: #422006; color: var(--yellow); border: 1px solid #854d0e; }
+    .verdict.fail { background: #450a0a; color: var(--red); border: 1px solid #991b1b; }
+
+    .subtitle { color: var(--muted); font-size: .85rem; margin-bottom: .15rem; }
+  </style>
+</head>
+<body>
+<div class="deck">
+  <div class="slides">
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 1: Title -->
+    <!-- ============================================================ -->
+    <div class="slide active" data-slide="1">
+      <p class="subtitle">Independent audit &middot; May 19, 2026</p>
+      <h1>ugo Analytics:<br>Security, Privacy &amp; Trust Audit</h1>
+      <p class="tagline">A principal-engineer-level review of the analytics pipeline, data handling, security posture, and product viability of the ugo URL shortener.</p>
+      <div class="pill-row">
+        <span class="pill green">Privacy</span>
+        <span class="pill yellow">Security</span>
+        <span class="pill red">Risk</span>
+        <span class="pill purple">Trust</span>
+        <span class="pill orange">SWOT</span>
+      </div>
+      <p style="margin-top:.6rem;">Scope: full source audit of the <code>main</code> branch &mdash; models, controllers, jobs, views, config, and public pages.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 2: Audit scope & methodology -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="2">
+      <h2>Scope &amp; Methodology</h2>
+      <p class="lead">What was reviewed, and how findings are classified.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Artifacts Reviewed</h4>
+          <ul>
+            <li>All models: <code>Visit</code>, <code>Link</code>, <code>Workspace</code>, <code>User</code>, <code>Session</code>, <code>AppConfig</code></li>
+            <li>Jobs: <code>RecordVisitJob</code>, <code>ProcessVisitsJob</code>, <code>CleanupVisitsJob</code></li>
+            <li><code>VisitorHash</code> module &amp; its test suite</li>
+            <li>Controllers: <code>LinksController</code>, <code>VisitsController</code>, API controllers, <code>SessionsController</code>, <code>RegistrationsController</code></li>
+            <li>Views: redirect page, analytics dashboard, layout, all public static pages</li>
+            <li>Config: routes, production.rb, CSP initializer, filter_parameters, recurring.yml</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Severity Classification</h4>
+          <ul>
+            <li><span class="sev crit">CRIT</span> Actively exploitable, data breach risk</li>
+            <li><span class="sev high">HIGH</span> Significant gap, likely to be exploited</li>
+            <li><span class="sev med">MED</span> Defense-in-depth gap, moderate risk</li>
+            <li><span class="sev low">LOW</span> Minor issue, best-practice deviation</li>
+            <li><span class="sev info">INFO</span> Observation, no immediate risk</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 3: Analytics pipeline overview -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="3">
+      <h2>Analytics Pipeline Overview</h2>
+      <p class="lead">How a click becomes an analytics data point.</p>
+
+      <div class="flow"><strong>GET /:slug</strong>  &rarr;  <em>LinksController#link</em>
+  &darr;
+<strong>after_action :track_visit</strong>  (fires on every successful response)
+  &darr;
+<em>RecordVisitJob.perform_later</em>  (Solid Queue &rarr; separate SQLite)
+  Captures: link_id, ip_address, user_agent, referer, timestamp
+  Computes: <em>VisitorHash.compute(ip, ua, link_id, timestamp)</em>
+  &darr;
+<strong>Visit row created</strong>  (processed_at: nil)
+  &darr;
+<em>ProcessVisitsJob</em>  (every 10s via recurring.yml)
+  1. Skip if GeoLite2-City.mmdb missing
+  2. <strong>CrawlerDetect</strong> &rarr; destroy if bot
+  3. <strong>MaxMindDB</strong> lookup &rarr; country, city, subdivision, lat/lng
+  4. <strong>DeviceDetector</strong> &rarr; device_type, browser_name, os_name
+  5. Set processed_at, invalidate chart cache
+  &darr;
+<em>VisitsController#index</em>  (cached 60 min per link per time range)
+  &rarr; time-series, device breakdown, geo breakdown, world map</div>
+
+      <h3>Key design choices</h3>
+      <ul>
+        <li><strong>Server-side tracking only</strong> &mdash; visit is recorded in <code>after_action</code>, independent of whether the client's JS executes. No tracking pixel, no client-side beacon.</li>
+        <li><strong>Deferred writes</strong> &mdash; the redirect hot path only enqueues to Solid Queue's SQLite; the primary DB writer lock stays free.</li>
+        <li><strong>No cookies set on click</strong> &mdash; unique visitors estimated via <code>visitor_hash</code> instead.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 4: Visitor Hash deep dive -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="4">
+      <h2>Visitor Hash: The Uniqueness Model</h2>
+      <p class="lead">How ugo counts "unique visitors" without cookies or persistent identifiers.</p>
+
+      <div class="flow"><strong>HMAC-SHA256(</strong>
+  key  = "ugo-visitor-hash:<em>{UTC date}</em>:<em>{secret_key_base}</em>",
+  data = "<em>{ip}</em>|<em>{user_agent}</em>|<em>{link_id}</em>"
+<strong>)</strong> &rarr; truncated to 32 hex chars (128 bits)</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>What works well</h4>
+          <ul>
+            <li><strong>Daily salt rotation</strong> &mdash; hashes from day N cannot be correlated with day N+1. This is the Plausible/Fathom approach.</li>
+            <li><strong>Link-scoped</strong> &mdash; <code>link_id</code> in the HMAC input means a visitor to Link A cannot be correlated with the same visitor on Link B. Cross-link profiling is impossible.</li>
+            <li><strong>Server-secret keyed</strong> &mdash; an attacker with only the hash cannot brute-force the IP without <code>secret_key_base</code>.</li>
+            <li><strong>Well-tested</strong> &mdash; the test suite covers determinism, daily rotation, IP/UA/link divergence, and nil handling.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Limitations &amp; caveats</h4>
+          <ul>
+            <li><strong>Same-day only</strong> &mdash; "unique visitors" is meaningful within a single day. Weekly/monthly uniques are overcounted since hashes rotate daily.</li>
+            <li><strong>Shared IP conflation</strong> &mdash; users behind the same NAT with the same browser/OS appear as one visitor.</li>
+            <li><strong>UA changes</strong> &mdash; browser updates mid-day produce a new hash for the same person.</li>
+            <li><strong>VPN/proxy blind spot</strong> &mdash; VPN exit node IP + common UA = many distinct people collapsed into one hash.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="verdict warn">VERDICT: Solid privacy design, but "unique visitors" should be understood as an estimate, not a precise count.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 5: Privacy — what is stored -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="5">
+      <h2>Privacy: What Data Is Stored</h2>
+      <p class="lead">The visits table is the core privacy surface. Here is exactly what is persisted per click.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Stored in visits table</h4>
+          <ul>
+            <li><span class="sev high">PII</span> <code>ip_address</code> &mdash; raw, untruncated IP (NOT NULL)</li>
+            <li><span class="sev med">PII</span> <code>user_agent</code> &mdash; full UA string (NOT NULL)</li>
+            <li><span class="sev low">META</span> <code>referer</code> &mdash; referring URL</li>
+            <li><span class="sev info">PSEUDO</span> <code>visitor_hash</code> &mdash; daily-rotated pseudonym</li>
+            <li><span class="sev info">GEO</span> <code>country</code>, <code>city</code>, <code>subdivision</code>, <code>country_code</code></li>
+            <li><span class="sev med">GEO</span> <code>latitude</code>, <code>longitude</code>, <code>accuracy_radius</code></li>
+            <li><span class="sev info">DEVICE</span> <code>device_type</code>, <code>browser_name</code>, <code>os_name</code></li>
+            <li><span class="sev info">META</span> <code>timestamp</code>, <code>processed_at</code>, <code>link_id</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Assessment</h4>
+          <p><span class="sev high">HIGH</span> <strong>Raw IP is stored permanently alongside the visitor hash.</strong> The entire point of the daily-rotated hash is to avoid persistent identifiers, yet the raw IP &mdash; a directly identifying PII under GDPR Art. 4(1) &mdash; sits in the same row, indefinitely (until the cleanup job runs).</p>
+          <p style="margin-top:.5rem;"><span class="sev med">MED</span> <strong>Lat/lng coordinates</strong> at city-level accuracy can narrow a person's location to a few km. This exceeds what most privacy-respecting analytics tools store.</p>
+          <p style="margin-top:.5rem;"><span class="sev info">INFO</span> The privacy policy at <code>/privacy</code> honestly discloses IP and UA collection. However, it does not mention lat/lng storage.</p>
+        </div>
+      </div>
+      <div class="verdict fail">VERDICT: The raw IP storage undermines the privacy guarantees the visitor hash was designed to provide.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 6: Privacy — recommendations -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="6">
+      <h2>Privacy: Recommended Remediations</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>1. Drop raw IP after processing</h4>
+          <p>Once <code>ProcessVisitsJob</code> has performed the GeoIP lookup and computed the visitor hash, the raw IP has served its purpose. Null it out:</p>
+          <p><code>visit.update(processed_data.merge(ip_address: nil))</code></p>
+          <p>This requires making <code>ip_address</code> nullable in the schema. The visitor hash already captures uniqueness; geo data is already extracted.</p>
+        </div>
+        <div class="card">
+          <h4>2. Drop lat/lng or reduce precision</h4>
+          <p>The analytics dashboard never displays lat/lng &mdash; it only uses country, subdivision, and city. Consider either not storing coordinates at all, or truncating to 1 decimal place (~11 km precision) if future features need them.</p>
+        </div>
+        <div class="card">
+          <h4>3. Truncate user_agent after parsing</h4>
+          <p>After <code>DeviceDetector</code> extracts device_type/browser/OS, the raw UA string is no longer needed. Replace it with a normalized key like <code>"mobile|chrome|android"</code> or null it out.</p>
+        </div>
+        <div class="card">
+          <h4>4. Update privacy policy</h4>
+          <p>Disclose lat/lng storage (or remove it). If IP is nullified post-processing, update the policy to say "IP addresses are used transiently for geolocation and discarded."</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 7: Security findings overview -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="7">
+      <h2>Security Findings</h2>
+      <p class="lead">Issues found during the source audit, ordered by severity.</p>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev high">HIGH</span> No Content Security Policy (CSP)</h4>
+        <p><code>config/initializers/content_security_policy.rb</code> is entirely commented out. Combined with the <code>admin_scripts.html_safe</code> injection in the layout, a compromised admin account can inject arbitrary JavaScript on every page for every user. Even without admin compromise, the lack of CSP means any XSS vector anywhere in the app has unrestricted access to the DOM, cookies, and external exfiltration endpoints.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev high">HIGH</span> admin_scripts renders unescaped HTML</h4>
+        <p>In <code>application.html.erb</code>: <code>AppConfig.shared.admin_scripts.html_safe</code>. This is intentional (for injecting analytics snippets) but is a stored XSS vector. If an attacker gains site_admin access, they own every session. There is no validation, no allowlist, and no sandboxing. The admin settings form accepts arbitrary HTML/JS.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev med">MED</span> No rate limiting on redirect endpoint</h4>
+        <p><code>GET /:slug</code> has no rate limit. An attacker can trivially inflate a link's analytics by scripting requests. The <code>SessionsController</code> has a <code>rate_limit</code> (10 per 3 min) but the redirect hot path and the API have none. No Rack::Attack middleware is configured.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev med">MED</span> Permanent session cookies</h4>
+        <p><code>cookies.signed.permanent[:session_id]</code> creates a cookie that expires ~20 years from now. If a session token is stolen, it remains valid indefinitely (no server-side expiry mechanism found beyond manual session destruction).</p>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 8: More security findings -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="8">
+      <h2>Security Findings (cont.)</h2>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev med">MED</span> API authentication is timing-attack susceptible</h4>
+        <p><code>Api::ApplicationController</code> compares <code>@api_key == AppConfig.shared.admin_api_key</code> using Ruby's <code>==</code> which is not constant-time. The admin API key is the most privileged credential. Use <code>ActiveSupport::SecurityUtils.secure_compare</code> instead.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev med">MED</span> Host authorization disabled in production</h4>
+        <p><code>config.hosts</code> is commented out in <code>production.rb</code>. This leaves the app open to DNS rebinding attacks and host header injection, which can poison password reset links, cache keys, and canonical URLs.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev low">LOW</span> MissionControl::Jobs mounted without explicit auth guard</h4>
+        <p><code>mount MissionControl::Jobs::Engine, at: "/jobs"</code> &mdash; the route file does not wrap this in an <code>authenticate</code> block. If MissionControl does not enforce its own auth, the queue dashboard could be publicly accessible. Verify that it's gated or add a constraint.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev low">LOW</span> Layout meta tags contain stale placeholder content</h4>
+        <p><code>application.html.erb</code> sets <code>lang="es"</code>, <code>meta name="description"</code> referencing "Cotizaciones y servicios personalizados de impresión 3d", and default title "l.fdo.cr". These are leftovers from a previous project and don't affect security, but undermine professional credibility.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:.65rem; max-width:54rem;">
+        <h4><span class="sev info">INFO</span> Hosted instance runs Plausible tracker</h4>
+        <p>The layout includes <code>&lt;script defer data-domain="fdo.cr" src="/dolan/wat/script.js"&gt;</code> in production. This is a self-proxied Plausible snippet tracking visitors to the dashboard itself. For a product that markets "no third-party trackers," this warrants disclosure &mdash; even though Plausible is privacy-respecting, it's still a tracker on the authenticated app pages.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 9: Analytics trustworthiness -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="9">
+      <h2>Analytics Trustworthiness</h2>
+      <p class="lead">How much should an end user trust the numbers ugo shows them?</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="color:var(--green);">What makes the data reliable</h4>
+          <ul>
+            <li><strong>First-party, server-side tracking.</strong> Every request to <code>/:slug</code> is recorded regardless of client-side JS, ad blockers, or browser privacy features. This is more reliable than client-side analytics.</li>
+            <li><strong>Bot filtering.</strong> <code>CrawlerDetect</code> runs on every visit before it reaches the dashboard. Known bots are discarded.</li>
+            <li><strong>No sampling.</strong> Every visit is recorded and processed. There's no statistical sampling that could introduce error.</li>
+            <li><strong>Workspace RBAC.</strong> Analytics are scoped to workspace membership. No data leaks across tenants.</li>
+            <li><strong>Cache invalidation.</strong> Chart cache keys are purged when new visits are processed, so data freshness is bounded by the 10-second processing interval.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="color:var(--red);">What undermines the data</h4>
+          <ul>
+            <li><strong>No click fraud protection.</strong> Anyone can curl <code>/:slug</code> in a loop and inflate numbers. There's no IP-based dedup, no CAPTCHA, no velocity check.</li>
+            <li><strong>Unique visitor overcounting.</strong> Daily hash rotation means a 7-day "unique visitors" count is really "sum of daily uniques" &mdash; the same person is counted once per day.</li>
+            <li><strong>"Unique visitors" displayed without caveat.</strong> The dashboard shows "Unique Visitors" as a stat without explaining the daily-rotation limitation.</li>
+            <li><strong>GeoIP inaccuracy.</strong> MaxMind GeoLite2 is ~65-80% accurate at city level. VPN users show exit-node locations. This is inherent to all GeoIP, but users may not realize it.</li>
+            <li><strong>No referrer spam detection.</strong> Fake referrers are stored and displayed as-is.</li>
+            <li><strong>60-minute chart cache.</strong> Although cache is invalidated on processing, the <code>expires_in: 60.minutes</code> fallback means stale data can persist if cache invalidation fails.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="verdict warn">VERDICT: Analytics are directionally accurate and better than most client-side alternatives, but vulnerable to intentional manipulation.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 10: Data retention & lifecycle -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="10">
+      <h2>Data Retention &amp; Lifecycle</h2>
+      <p class="lead">How long visit data lives, and what happens when it's deleted.</p>
+
+      <div class="flow"><strong>CleanupVisitsJob</strong> (runs monthly at 03:00 UTC)
+  &rarr; Free workspaces:  delete visits older than <em>1 month</em>
+  &rarr; Basic/Growth:     delete visits older than <em>3 months</em>
+  &rarr; Dedicated/Self-hosted: <em>no automatic cleanup</em> (unlimited retention)</div>
+
+      <h3>Assessment</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="color:var(--green);">Good</h4>
+          <ul>
+            <li>Retention limits exist and are enforced by a recurring job.</li>
+            <li>User account deletion cascades: <code>User &rarr; owned_workspaces (destroy) &rarr; links (destroy) &rarr; visits (destroy)</code>.</li>
+            <li>Link deletion cascades visits via <code>dependent: :destroy</code>.</li>
+            <li>The privacy policy correctly states "You can delete your links and their associated analytics at any time."</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="color:var(--yellow);">Concerns</h4>
+          <ul>
+            <li><strong>Raw IP persists for the full retention window.</strong> On paid plans, that's 3 months of IP addresses. On dedicated/self-hosted, it's forever.</li>
+            <li><strong>No GDPR right-to-erasure mechanism for link clickers.</strong> A person who clicked a link has no way to request deletion of their visit data. The privacy policy offers erasure for account holders, not for visitors whose clicks were tracked.</li>
+            <li><strong>SQLite <code>delete_all</code> doesn't VACUUM.</strong> Deleted visit data may persist on disk in SQLite's free pages until the next VACUUM or page reuse.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 11: The redirect page -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="11">
+      <h2>Redirect Page Security</h2>
+      <p class="lead">The <code>link.html.erb</code> template is the public-facing redirect page. It has the widest attack surface.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>How the redirect works</h4>
+          <p>The page uses a JS redirect: <code>window.location.href = "&lt;%= raw j(@link.url) %&gt;"</code> and also provides an <code>&lt;a href&gt;</code> fallback and a <code>&lt;link rel="canonical"&gt;</code>, both using <code>raw @link.url</code>.</p>
+          <p style="margin-top:.4rem;">The <code>j()</code> helper escapes JS string delimiters. The <code>Link</code> model validates URL scheme against <code>ALLOWED_URL_SCHEMES = %w[http https]</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Assessment</h4>
+          <p><span class="sev low">LOW</span> The defense-in-depth is reasonable. The <code>url_scheme_is_allowed</code> validation blocks <code>javascript:</code>, <code>data:</code>, and <code>vbscript:</code> schemes. The <code>j()</code> helper prevents breaking out of the JS string context.</p>
+          <p style="margin-top:.4rem;"><span class="sev info">INFO</span> The <code>raw</code> usage in the <code>href</code> and <code>canonical</code> attributes relies entirely on the model validation. If a URL containing double-quotes or angle brackets were to slip through <code>URI.regexp</code> validation, it could break out of the attribute. This is unlikely but fragile &mdash; using <code>ERB::Util.html_escape</code> on the URL in HTML attribute contexts would be strictly safer.</p>
+        </div>
+      </div>
+
+      <h3>Social tag injection surface</h3>
+      <p>Social tag fields (<code>title</code>, <code>description</code>, <code>image_url</code>) are rendered in <code>&lt;meta&gt;</code> tags without explicit escaping. ERB's default <code>&lt;%=</code> auto-escapes HTML, so this is safe unless <code>raw</code> or <code>html_safe</code> is used. Confirmed: the social tag rendering uses <code>&lt;%=</code>, so it is properly escaped.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 12: SWOT — Strengths & Weaknesses -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="12">
+      <h2>SWOT Analysis</h2>
+      <p class="lead">Strategic assessment of ugo as an analytics-bearing product.</p>
+
+      <div class="swot">
+        <div class="card s">
+          <h4 style="color:var(--green);">Strengths</h4>
+          <ul>
+            <li><strong>Privacy-first architecture.</strong> Daily-rotated hashes, no cookies on clicks, no third-party trackers on the redirect path. This is a genuine differentiator.</li>
+            <li><strong>Open source &amp; self-hostable.</strong> Full data sovereignty for self-hosted users. The O'Saasy license and Once deployment make this accessible.</li>
+            <li><strong>Server-side tracking.</strong> Immune to ad blockers and browser privacy features that break client-side analytics. More accurate than JS-based competitors.</li>
+            <li><strong>Simple, auditable codebase.</strong> Single Rails app, SQLite, no microservices. Easy to reason about, easy to audit, easy to deploy.</li>
+            <li><strong>Solid Queue architecture.</strong> Deferred visit recording keeps the redirect fast. Separate SQLite DB for the queue is a smart isolation choice.</li>
+            <li><strong>Good bot filtering.</strong> CrawlerDetect integration removes known bots before they hit dashboards.</li>
+            <li><strong>Encrypted secrets at rest.</strong> SMTP creds, API keys, and setup codes use Active Record Encryption.</li>
+          </ul>
+        </div>
+
+        <div class="card w">
+          <h4 style="color:var(--red);">Weaknesses</h4>
+          <ul>
+            <li><strong>Raw IP storage contradicts privacy positioning.</strong> The marketing says "respects you" but the DB stores raw IPs for weeks/months. This is the single biggest gap between promise and implementation.</li>
+            <li><strong>No CSP.</strong> A fundamental web security header is entirely absent. This is table-stakes for any production SaaS.</li>
+            <li><strong>No rate limiting on the redirect path.</strong> Analytics are trivially inflatable. This undermines trust in the numbers.</li>
+            <li><strong>Unique visitor metric is misleading.</strong> Weekly/monthly "unique" counts are actually sums-of-daily-uniques due to hash rotation. Users may make decisions based on inflated uniqueness numbers.</li>
+            <li><strong>Short data retention on paid plans.</strong> 3 months is short compared to competitors. No way to extend it.</li>
+            <li><strong>No API for analytics data.</strong> Users can see charts but can't export or programmatically access their analytics. Lock-in by limitation.</li>
+            <li><strong>Permanent session cookies.</strong> No expiry, no rotation. A stolen cookie is a permanent skeleton key.</li>
+            <li><strong>Layout contains stale placeholder text</strong> from a previous project (Spanish meta tags, wrong title). Erodes trust on first inspection.</li>
+          </ul>
+        </div>
+
+        <div class="card o">
+          <h4 style="color:var(--accent);">Opportunities</h4>
+          <ul>
+            <li><strong>IP-after-processing nullification.</strong> A single migration + 1-line code change would make ugo's privacy story genuinely best-in-class, not just good.</li>
+            <li><strong>CSP + Rack::Attack.</strong> Adding these two defenses would close the most critical security gaps and is straightforward in Rails.</li>
+            <li><strong>Click fraud detection.</strong> IP-based velocity limiting (e.g., max N visits per IP per hour per link, enforced at recording time) would dramatically improve analytics trust.</li>
+            <li><strong>Analytics API &amp; CSV export.</strong> An API for analytics data would unlock integrations and reduce churn risk.</li>
+            <li><strong>Privacy certification.</strong> With IP nullification and CSP, ugo could credibly pursue GDPR compliance certification, which would be a strong sales differentiator in EU markets.</li>
+            <li><strong>UTM parameter capture.</strong> The URL builder adds UTM params to destination URLs, but ugo doesn't capture them from the redirect. Parsing UTMs from the destination URL and storing them as visit metadata would make the analytics much richer.</li>
+            <li><strong>Longer retention tiers.</strong> A 12-month retention option for Growth/Dedicated would match market expectations.</li>
+          </ul>
+        </div>
+
+        <div class="card t">
+          <h4 style="color:var(--orange);">Threats</h4>
+          <ul>
+            <li><strong>GDPR enforcement.</strong> Storing raw IPs of EU visitors without explicit consent or legitimate interest documentation is a regulatory risk. A single complaint to a DPA could trigger scrutiny.</li>
+            <li><strong>Click fraud at scale.</strong> Without rate limiting, a disgruntled competitor or troll can render any user's analytics meaningless. This is an existential threat to the product's value proposition.</li>
+            <li><strong>Admin account compromise.</strong> The <code>admin_scripts</code> feature turns a single compromised admin into a stored XSS affecting every user on the instance. On the hosted <code>ugo.cr</code> service, this is a multi-tenant risk.</li>
+            <li><strong>MaxMind license changes.</strong> GeoLite2 is free but requires a license key and compliance with MaxMind's EULA. License terms have changed before (2019). Dependency on a single geo provider is a supply-chain risk.</li>
+            <li><strong>Competitive pressure.</strong> Dub.co, Short.io, and Bitly offer richer analytics (conversion tracking, A/B testing, advanced fraud detection). ugo's simplicity is a strength but the feature gap is real.</li>
+            <li><strong>SQLite scaling ceiling.</strong> Single-writer SQLite works beautifully for small-to-medium traffic but will hit contention limits for high-volume dedicated instances.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 13: End-user trust assessment -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="13">
+      <h2>End-User Trust Assessment</h2>
+      <p class="lead">What should a user of ugo.cr (or a self-hosted instance) expect?</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h4>For link creators (dashboard users)</h4>
+          <ul>
+            <li>Your analytics are <strong>directionally accurate</strong> for organic traffic.</li>
+            <li>Unique visitor counts are <strong>daily estimates</strong>, not precise. Expect overcounting on weekly/monthly views.</li>
+            <li>Your data is <strong>workspace-isolated</strong> and only visible to team members.</li>
+            <li>Your data is deleted after 1-3 months depending on plan.</li>
+            <li><strong>Risk:</strong> Anyone with your short URL can inflate your click counts with no mitigation.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>For link clickers (end visitors)</h4>
+          <ul>
+            <li>No cookies are set on you. No cross-site tracking.</li>
+            <li>Your <strong>IP address is stored</strong> in the database for 1-3 months.</li>
+            <li>Your approximate <strong>lat/lng</strong> is derived and stored.</li>
+            <li>Your <strong>full user-agent</strong> string is stored.</li>
+            <li>You have <strong>no mechanism</strong> to request deletion of your click data.</li>
+            <li><strong>On self-hosted instances:</strong> the operator controls retention and may keep data indefinitely.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>For self-hosted operators</h4>
+          <ul>
+            <li>You have <strong>full data sovereignty</strong>. No data leaves your server.</li>
+            <li>Encryption keys are auto-generated and stored locally.</li>
+            <li>No cleanup job runs by default for dedicated plans &mdash; data grows unbounded.</li>
+            <li>You are the GDPR data controller.</li>
+            <li><strong>Risk:</strong> If you enable <code>admin_scripts</code>, you accept the XSS surface that entails.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 14: Priority action items -->
+    <!-- ============================================================ -->
+    <div class="slide dense" data-slide="14">
+      <h2>Priority Action Items</h2>
+      <p class="lead">Ranked by impact-to-effort ratio. The top 5 would dramatically improve the product's security and privacy posture.</p>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>1. <span class="sev high">HIGH</span> Nullify IP address after processing</h4>
+        <p>In <code>ProcessVisitsJob</code>, after GeoIP lookup and visitor hash are computed, set <code>ip_address</code> to <code>nil</code>. Make the column nullable. <strong>Effort: ~30 minutes.</strong> Transforms the privacy story from "we store your IP" to "we transiently use your IP and discard it."</p>
+      </div>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>2. <span class="sev high">HIGH</span> Enable Content Security Policy</h4>
+        <p>Uncomment and configure the CSP initializer. Start with <code>report-only</code> mode, then enforce. This is the single most impactful security improvement. <strong>Effort: ~1 hour.</strong></p>
+      </div>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>3. <span class="sev med">MED</span> Add rate limiting to redirect endpoint</h4>
+        <p>Add <code>rate_limit to: 30, within: 1.minute</code> on <code>LinksController#link</code> (scoped by IP), or add Rack::Attack middleware. <strong>Effort: ~1 hour.</strong> Prevents trivial analytics inflation.</p>
+      </div>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>4. <span class="sev med">MED</span> Use secure_compare for API key auth</h4>
+        <p>Replace <code>@api_key == AppConfig.shared.admin_api_key</code> with <code>ActiveSupport::SecurityUtils.secure_compare</code>. <strong>Effort: 5 minutes.</strong></p>
+      </div>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>5. <span class="sev med">MED</span> Add session expiry</h4>
+        <p>Replace <code>cookies.signed.permanent</code> with a bounded expiry (e.g., 30 days). Add a <code>last_active_at</code> check on session resume. <strong>Effort: ~30 minutes.</strong></p>
+      </div>
+
+      <div class="card" style="max-width:54rem; margin-bottom:.5rem;">
+        <h4>6. <span class="sev low">LOW</span> Fix layout meta tags</h4>
+        <p>Replace the stale Spanish placeholder meta tags, fix <code>lang="es"</code> to <code>lang="en"</code>, and set the default title to the app name. <strong>Effort: 5 minutes.</strong></p>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 15: Final verdict -->
+    <!-- ============================================================ -->
+    <div class="slide" data-slide="15">
+      <h2>Final Verdict</h2>
+      <p class="lead">Overall assessment across three dimensions.</p>
+
+      <div class="grid-3" style="margin-top:.75rem;">
+        <div class="card" style="text-align:center;">
+          <h4>Analytics Trust</h4>
+          <div class="verdict warn" style="font-size:1.1rem; margin:.5rem 0;">GOOD WITH CAVEATS</div>
+          <p style="text-align:left;">Server-side tracking is inherently more reliable than client-side. Bot filtering is solid. But the lack of click fraud protection and the misleading "unique visitors" metric on multi-day ranges are real trust gaps.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h4>Security Posture</h4>
+          <div class="verdict warn" style="font-size:1.1rem; margin:.5rem 0;">NEEDS WORK</div>
+          <p style="text-align:left;">The foundation is sound (force_ssl, encrypted secrets, CSRF, auth). But the absent CSP, unguarded admin_scripts injection, permanent sessions, and no rate limiting on the hottest endpoint are gaps that a production SaaS shouldn't ship with.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h4>Privacy</h4>
+          <div class="verdict fail" style="font-size:1.1rem; margin:.5rem 0;">RAW IP MUST GO</div>
+          <p style="text-align:left;">The visitor hash design is excellent and shows real intent. But storing the raw IP alongside it negates the privacy benefit. Fix this one thing and the privacy story goes from "mixed" to "best-in-class among URL shorteners."</p>
+        </div>
+      </div>
+
+      <p style="margin-top:1.2rem; max-width:54rem;">
+        <strong>Bottom line:</strong> ugo has a strong architectural foundation and a genuine privacy-first intent that most competitors lack. The issues found are all fixable with modest effort. The top 3 action items (IP nullification, CSP, rate limiting) could be shipped in a single afternoon and would meaningfully de-risk the product for both hosted and self-hosted users.
+      </p>
+    </div>
+
+  </div><!-- .slides -->
+
+  <!-- Navigation -->
+  <div class="nav">
+    <button id="prev" onclick="go(-1)">&larr; Prev</button>
+    <span class="counter"><span id="cur">1</span> / <span id="tot">15</span></span>
+    <button id="next" onclick="go(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = slides.length;
+  document.getElementById('tot').textContent = total;
+
+  function show(i) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(total - 1, i));
+    slides[current].classList.add('active');
+    document.getElementById('cur').textContent = current + 1;
+    document.getElementById('prev').disabled = current === 0;
+    document.getElementById('next').disabled = current === total - 1;
+  }
+
+  function go(delta) { show(current + delta); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+  });
+
+  show(0);
+</script>
+</body>
+</html>

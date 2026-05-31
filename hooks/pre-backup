@@ -1,0 +1,14 @@
+#!/bin/bash -e
+# Once calls this hook before backing up /rails/storage.
+# Use SQLite's online backup to create consistent snapshots without
+# pausing the container.
+
+STORAGE="/rails/storage"
+BACKUP_DIR="$STORAGE/backups"
+mkdir -p "$BACKUP_DIR"
+
+for db in production.sqlite3 production_cache.sqlite3 production_queue.sqlite3 production_cable.sqlite3; do
+  if [ -f "$STORAGE/$db" ]; then
+    sqlite3 "$STORAGE/$db" ".backup '$BACKUP_DIR/$db'"
+  fi
+done

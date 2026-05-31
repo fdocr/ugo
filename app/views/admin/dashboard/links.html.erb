@@ -1,0 +1,58 @@
+<%= turbo_frame_tag "admin-links" do %>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+    <%= render "ui/search_field",
+          url: admin_links_path,
+          value: @search,
+          placeholder: "Search by name, slug, or URL...",
+          frame: "admin-links",
+          hidden_fields: { sort: @sort },
+          clear_url: admin_links_path(sort: @sort),
+          clear_visible: @search.present? %>
+
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-muted-foreground">Sort:</span>
+      <%= render "ui/segmented",
+            frame: "admin-links",
+            options: [
+              { label: "Recent",          href: admin_links_path(sort: "recent", search: @search), active: @sort == "recent" },
+              { label: "Most Visits (7d)", href: admin_links_path(sort: "visits", search: @search), active: @sort == "visits" }
+            ] %>
+    </div>
+  </div>
+
+  <%= render "ui/table", headers: [ "Link", "Workspace", "Visits (7d)", "Created" ] do %>
+    <% if @links.any? %>
+      <% @links.each do |link| %>
+        <tr class="border-b border-border last:border-0 hover:bg-accent/50">
+          <td class="py-3 px-2">
+            <div class="font-medium text-foreground"><%= link.name.present? ? truncate(link.name, length: 40) : "Unnamed" %></div>
+            <div class="text-xs text-muted-foreground font-mono">/<%= link.slug %></div>
+          </td>
+          <td class="py-3 px-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-foreground"><%= link.workspace.name %></span>
+              <%= render "ui/badge", text: link.workspace.plan.capitalize, tone: badge_tone_for_plan(link.workspace.plan) %>
+            </div>
+          </td>
+          <td class="py-3 px-2">
+            <span class="font-medium text-foreground"><%= number_with_delimiter(link.visits.where("timestamp > ?", 7.days.ago).count) %></span>
+          </td>
+          <td class="py-3 px-2 text-muted-foreground">
+            <%= link.created_at.strftime("%b %d, %Y") %>
+          </td>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr>
+        <td colspan="4" class="py-8 text-center text-muted-foreground">
+          No links found<%= " matching \"#{@search}\"" if @search.present? %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/pagination",
+        pagy: @pagy,
+        frame: "admin-links",
+        path: ->(p) { admin_links_path(p.merge(sort: @sort, search: @search)) } %>
+<% end %>

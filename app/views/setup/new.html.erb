@@ -1,0 +1,73 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-lg">
+    <div class="text-center mb-8">
+      <%= image_tag "ugo_logo.png", class: "h-12 mx-auto mb-4" %>
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground">Welcome!</h1>
+      <p class="text-sm text-muted-foreground mt-1">Let's set up your installation.</p>
+    </div>
+
+    <%= form_with url: setup_path, method: :post, class: "space-y-8" do |form| %>
+      <%= render "ui/card" do %>
+        <h2 class="text-lg font-semibold mb-4 text-foreground">Application</h2>
+        <div class="space-y-4">
+          <%= render "ui/input", form: form, field: :app_name, label: "App Name",
+                value: "ugo", placeholder: "ugo" %>
+          <%= render "ui/input", form: form, field: :app_domain, label: "Domain",
+                placeholder: "links.example.com", required: true,
+                hint: "The domain where this app is accessible." %>
+        </div>
+      <% end %>
+
+      <%= render "ui/card" do %>
+        <div class="mb-4">
+          <h2 class="text-lg font-semibold text-foreground">Email (SMTP)</h2>
+          <p class="text-xs text-muted-foreground mt-1">Optional. Required for sending password resets and notifications.</p>
+        </div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <%= render "ui/input", form: form, field: :smtp_address, label: "SMTP Server", placeholder: "smtp.example.com" %>
+            <%= render "ui/input", form: form, field: :smtp_port, label: "Port",
+                  value: 587, placeholder: "587", inputmode: "numeric", pattern: "[0-9]*" %>
+          </div>
+          <%= render "ui/input", form: form, field: :smtp_username, label: "Username",
+                placeholder: "user@example.com", autocomplete: "off" %>
+          <%= render "ui/input", form: form, field: :smtp_password, type: :password, label: "Password",
+                placeholder: "••••••••", autocomplete: "off" %>
+          <%= render "ui/input", form: form, field: :smtp_from_email, type: :email, label: "From Address",
+                placeholder: "noreply@example.com" %>
+        </div>
+      <% end %>
+
+      <%= render "ui/card" do %>
+        <h2 class="text-lg font-semibold mb-4 text-foreground">Admin Account</h2>
+        <div class="space-y-4">
+          <%= render "ui/input", form: form, field: :admin_email, type: :email, label: "Email",
+                required: true, placeholder: "admin@example.com" %>
+          <%= render "ui/input", form: form, field: :admin_password, type: :password, label: "Password",
+                required: true, minlength: 8, maxlength: 72, placeholder: "••••••••",
+                hint: "Must be at least 8 characters." %>
+          <%= render "ui/input", form: form, field: :admin_password_confirmation, type: :password, label: "Confirm Password",
+                required: true, minlength: 8, maxlength: 72, placeholder: "••••••••" %>
+        </div>
+      <% end %>
+
+      <%= render "ui/card" do %>
+        <h2 class="text-lg font-semibold mb-4 text-foreground">Confirmation Code</h2>
+
+        <%= render "ui/banner", tone: :warning, title: "Check your server logs" do %>
+          <p class="text-xs mt-1 opacity-90">A unique setup code has been printed to your server output. Find it by checking your terminal (<code class="bg-warning-100 px-1 py-0.5 rounded text-xs font-mono">rails server</code>) or container logs (<code class="bg-warning-100 px-1 py-0.5 rounded text-xs font-mono">docker logs</code>). Enter it below to verify you are the server owner.</p>
+          <p class="mt-3 text-xs opacity-80">Tip: search your logs for <code class="bg-warning-100 px-1 py-0.5 rounded font-mono">SETUP CODE:</code> to find it quickly.</p>
+        <% end %>
+
+        <div class="mt-4">
+          <%= render "ui/input", form: form, field: :setup_code, label: "Setup Code",
+                required: true, autocomplete: "off",
+                placeholder: "Paste the code from your server logs" %>
+        </div>
+      <% end %>
+
+      <%= form.submit "Complete Setup", class: "ui-btn-primary ui-btn-md w-full" %>
+    <% end %>
+  </div>
+</div>

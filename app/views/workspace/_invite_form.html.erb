@@ -1,0 +1,16 @@
+<div id="invite_form">
+  <%= form_with model: invitation, url: workspace_invitations_path(workspace), class: "flex flex-col sm:flex-row gap-2 sm:items-end" do |form| %>
+    <div class="flex-1 space-y-2">
+      <%= form.label :email, "Email address", class: "ui-label" %>
+      <%= form.email_field :email, placeholder: "colleague@company.com", required: true, class: "ui-input" %>
+    </div>
+    <div class="space-y-2">
+      <%= form.label :role, "Role", class: "ui-label" %>
+      <%= form.select :role,
+            Invitation.roles.keys.map { |r| [ r.titleize, r ] },
+            {},
+            class: "ui-select" %>
+    </div>
+    <%= form.submit "Invite", class: "ui-btn-primary ui-btn-md" %>
+  <% end %>
+</div>

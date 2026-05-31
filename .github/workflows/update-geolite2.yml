@@ -1,0 +1,100 @@
+name: Update GeoLite2 DB
+
+# Automated GeoLite2 IP database refresh. Tags created by this workflow are
+# purely for triggering a Docker image rebuild with a fresh MaxMind database.
+# They are NOT code releases. Code releases are tagged manually (e.g. v0.2.0).
+# Automated tags are identifiable by their annotation containing
+# "geolite2-last-modified:" in the tag message body.
+
+on:
+  schedule:
+    # GeoLite2-City is released every Tuesday and Friday (by 11:59 PM US Eastern).
+    # Check every 4 hours on Tue/Fri, plus a Saturday morning catch-up for delayed
+    # Friday releases.
+    - cron: '0 2,6,10,14,18,22 * * 2,5'
+    - cron: '0 10 * * 6'
+  workflow_dispatch:
+
+jobs:
+  check-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check for new GeoLite2-City release
+        id: check
+        run: |
+          REMOTE_LAST_MODIFIED=$(curl -sI -L \
+            -u "${{ secrets.MAXMIND_ACCOUNT_ID }}:${{ secrets.MAXMIND_LICENSE_KEY }}" \
+            'https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz' \
+            | grep -i '^last-modified:' | sed 's/[Ll]ast-[Mm]odified: //' | tr -d '\r')
+
+          echo "Remote Last-Modified: $REMOTE_LAST_MODIFIED"
+
+          if [ -z "$REMOTE_LAST_MODIFIED" ]; then
+            echo "Failed to fetch Last-Modified header"
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          # Find the most recent tag whose annotation contains a geolite2 marker.
+          # Uses a temp file to avoid the pipe-subshell variable scoping issue.
+          LAST_GEOLITE2_TAG=""
+          for tag in $(git tag -l 'v*' --sort=-v:refname); do
+            MSG=$(git tag -l "$tag" --format='%(contents)')
+            if echo "$MSG" | grep -q 'geolite2-last-modified:'; then
+              LAST_GEOLITE2_TAG="$tag"
+              break
+            fi
+          done
+
+          if [ -n "$LAST_GEOLITE2_TAG" ]; then
+            STORED_DATE=$(git tag -l "$LAST_GEOLITE2_TAG" --format='%(contents)' \
+              | grep 'geolite2-last-modified:' | sed 's/.*geolite2-last-modified: //')
+            echo "Last GeoLite2 tag: $LAST_GEOLITE2_TAG (DB date: $STORED_DATE)"
+
+            if [ "$REMOTE_LAST_MODIFIED" = "$STORED_DATE" ]; then
+              echo "Database is already up to date."
+              echo "needs_update=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          else
+            echo "::notice::No previous GeoLite2 release tag found. This is the first run -- will create the initial tag."
+          fi
+
+          echo "needs_update=true" >> "$GITHUB_OUTPUT"
+          echo "remote_date=$REMOTE_LAST_MODIFIED" >> "$GITHUB_OUTPUT"
+
+          # Compute next patch version
+          if [ -n "$LATEST_TAG" ]; then
+            MAJOR=$(echo "$LATEST_TAG" | sed 's/^v//' | cut -d. -f1)
+            MINOR=$(echo "$LATEST_TAG" | sed 's/^v//' | cut -d. -f2)
+            PATCH=$(echo "$LATEST_TAG" | sed 's/^v//' | cut -d. -f3)
+            NEXT_TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          else
+            NEXT_TAG="v0.1.0"
+          fi
+          echo "next_tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
+          echo "Will create tag: $NEXT_TAG"
+
+      - name: Create release tag
+        if: steps.check.outputs.needs_update == 'true'
+        env:
+          NEXT_TAG: ${{ steps.check.outputs.next_tag }}
+          REMOTE_DATE: ${{ steps.check.outputs.remote_date }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TAG_MSG="Update GeoLite2-City database
+
+          geolite2-last-modified: ${REMOTE_DATE}"
+          git tag -a "$NEXT_TAG" -m "$TAG_MSG"
+          git push origin "$NEXT_TAG"

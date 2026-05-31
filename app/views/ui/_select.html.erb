@@ -1,0 +1,19 @@
+<%# locals: (form: nil, field: nil, label: nil, hint: nil, options:, selected: nil, include_blank: false, required: false, name: nil, id: nil, html_options: {}) %>
+<div class="space-y-2">
+  <% if label.present? %>
+    <% if form && field %>
+      <%= form.label field, label, class: "ui-label" %>
+    <% else %>
+      <label <%= "for=\"#{id}\"".html_safe if id %> class="ui-label"><%= label %></label>
+    <% end %>
+  <% end %>
+  <% if form && field %>
+    <%= form.select field, options, { include_blank: include_blank }, html_options.reverse_merge(class: "ui-select", required: required) %>
+  <% else %>
+    <%= select_tag(name || field, options_for_select(options, selected),
+          html_options.reverse_merge(class: "ui-select", id: id, include_blank: include_blank, required: required)) %>
+  <% end %>
+  <% if hint.present? %>
+    <p class="ui-hint"><%= hint %></p>
+  <% end %>
+</div>

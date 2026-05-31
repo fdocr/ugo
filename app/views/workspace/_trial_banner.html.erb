@@ -1,0 +1,25 @@
+<%# locals: (workspace:) %>
+<%= turbo_frame_tag dom_id(workspace, :trial_banner), class: "block mb-4 sm:mb-5" do %>
+  <div
+    class="ui-banner-warning"
+    data-controller="trial-countdown"
+    data-trial-countdown-end-at-value="<%= workspace.trial_ends_at&.iso8601 %>"
+  >
+    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <div class="min-w-0">
+        <p class="font-medium">Basic plan trial</p>
+        <p class="text-xs opacity-90 mt-0.5">
+          Full Basic limits until <%= l(workspace.trial_ends_at, format: :long) %>.
+          <%= link_to "Subscribe early", new_workspace_checkout_path(workspace, plan: :basic), class: "font-medium underline hover:no-underline", data: { turbo_frame: "_top" } %>
+          or
+          <%= link_to "upgrade to Growth", new_workspace_checkout_path(workspace, plan: :growth), class: "font-medium underline hover:no-underline", data: { turbo_frame: "_top" } %>
+          for higher limits.
+        </p>
+      </div>
+      <div class="flex flex-col items-start sm:items-end gap-0.5 flex-shrink-0">
+        <span class="text-[10px] font-semibold uppercase tracking-wide opacity-70">Time left</span>
+        <span class="font-mono text-sm font-semibold tabular-nums" data-trial-countdown-target="label">—</span>
+      </div>
+    </div>
+  </div>
+<% end %>

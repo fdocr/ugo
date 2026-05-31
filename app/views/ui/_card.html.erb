@@ -1,0 +1,18 @@
+<%# locals: (padding: :md, tone: :default, extra_class: nil) %>
+<%
+  tone_class = case tone.to_sym
+  when :danger then "border-danger-200 bg-danger-50/40"
+  when :warning then "border-warning-200 bg-warning-50/60"
+  when :muted then "border-border bg-muted/30"
+  else "border-border bg-card"
+  end
+  padding_class = case padding.to_sym
+  when :sm then "p-4"
+  when :lg then "p-8"
+  when :none then ""
+  else "p-6"
+  end
+%>
+<div class="<%= ["rounded-lg border text-card-foreground shadow-card", tone_class, padding_class, extra_class].compact.join(" ") %>">
+  <%= yield %>
+</div>

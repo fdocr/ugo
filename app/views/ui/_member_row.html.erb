@@ -1,0 +1,22 @@
+<%# locals: (avatar_text:, avatar_tone: :primary, title:, subtitle: nil, trailing: nil, tone: :default) %>
+<%
+  surface = case tone.to_sym
+  when :warning then "bg-warning-50 border border-warning-200"
+  when :danger then "bg-danger-50 border border-danger-200"
+  else "bg-muted/50"
+  end
+%>
+<div class="flex items-center justify-between p-3 rounded-md <%= surface %>">
+  <div class="flex items-center gap-3 min-w-0">
+    <%= render "ui/avatar", text: avatar_text, tone: avatar_tone, size: :md %>
+    <div class="min-w-0">
+      <p class="text-sm font-medium text-foreground truncate"><%= title %></p>
+      <% if subtitle.present? %>
+        <p class="text-xs text-muted-foreground truncate"><%= subtitle %></p>
+      <% end %>
+    </div>
+  </div>
+  <% if trailing.present? %>
+    <div class="flex-shrink-0"><%= trailing %></div>
+  <% end %>
+</div>

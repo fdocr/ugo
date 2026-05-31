@@ -1,0 +1,6 @@
+<%# locals: (text:, tone: :neutral, size: :sm) %>
+<%
+  tone_class = "ui-badge-#{tone}"
+  size_class = size == :md ? "ui-badge" : "ui-badge ui-badge-sm"
+%>
+<span class="<%= [size_class, tone_class].join(" ") %>"><%= text %></span>

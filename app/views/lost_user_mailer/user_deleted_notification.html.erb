@@ -1,0 +1,39 @@
+<h3>Deleted User</h3>
+
+<p>The user with the following information has deleted their account:</p>
+
+<div style="margin: 20px 0; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc;">
+  <p><strong>Email:</strong> <%= @user.email %></p>
+  <p><strong>Site Admin:</strong> <%= @user.site_admin? ? "Yes" : "No" %></p>
+  <p><strong>Registration date:</strong> <%= I18n.l(@user.created_at, format: :long) %></p>
+  <p><strong>Time as user:</strong> <%= time_ago_in_words(@user.created_at) %></p>
+</div>
+
+<h4>Session History</h4>
+
+<% if @sessions.any? %>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+    <thead>
+      <tr style="background-color: #f1f5f9; text-align: left;">
+        <th style="padding: 10px; border: 1px solid #e2e8f0;">Date</th>
+        <th style="padding: 10px; border: 1px solid #e2e8f0;">IP</th>
+        <th style="padding: 10px; border: 1px solid #e2e8f0;">Browser</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @sessions.each do |session| %>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><%= I18n.l(session.created_at, format: :long) %></td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><%= session.ip_address %></td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><%= session.user_agent %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No session history available.</p>
+<% end %>
+
+<p style="margin-top: 30px; color: #64748b; font-style: italic;">
+  This information is sent as a record before the user's data is permanently deleted.
+</p>

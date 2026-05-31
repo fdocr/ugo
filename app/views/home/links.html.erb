@@ -1,0 +1,97 @@
+<%= turbo_frame_tag "dashboard-links" do %>
+  <%= form_with url: dashboard_links_path, method: :get,
+        data: { turbo_frame: "dashboard-links" },
+        class: "ui-search-bar mb-4" do |f| %>
+    <%= f.text_field :search,
+        value: @search,
+        placeholder: "Search by name, slug, or URL...",
+        class: "ui-input" %>
+    <%= f.select :workspace_id,
+        options_for_select(
+          @filterable_workspaces.map { |w| [ truncate(w.name, length: 24, omission: "…"), w.id ] },
+          @workspace_id
+        ),
+        { include_blank: "All Workspaces" },
+        class: "ui-select",
+        onchange: "this.form.requestSubmit()" %>
+    <div class="flex flex-col gap-2 sm:flex-row">
+      <%= f.submit "Search", class: "ui-btn-primary ui-btn-md w-full sm:w-auto" %>
+      <% if @search.present? || @workspace_id.present? %>
+        <%= link_to "Clear", dashboard_links_path, class: "ui-btn-secondary ui-btn-md w-full sm:w-auto", data: { turbo_frame: "dashboard-links" } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Link Cards Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% if @links.any? %>
+      <% @links.each do |link| %>
+        <%= link_to workspace_link_path(link.workspace.id, link.slug), class: "block", data: { turbo_frame: "_top" } do %>
+          <div class="rounded-md border border-border bg-card p-4 hover:bg-accent/50 transition-colors group relative">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <span class="text-muted-foreground/70">
+                  <%= render "shared/svg/link", class: "w-4 h-4" %>
+                </span>
+                <span class="font-medium text-foreground"><%= link.name.present? ? truncate(link.name, length: 50) : "Unnamed Link" %></span>
+              </div>
+              <% if link.url.present? %>
+                <p class="text-sm text-muted-foreground truncate"><%= link.url %></p>
+              <% else %>
+                <p class="text-sm text-muted-foreground truncate">No URL set</p>
+              <% end %>
+              <div class="flex items-center justify-between text-sm text-muted-foreground">
+                <%= render "ui/badge", text: link.workspace.name, tone: :primary %>
+                <span class="text-muted-foreground/50">
+                  <%= render "shared/svg/chevron_right", class: "w-5 h-5" %>
+                </span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="col-span-full">
+        <%= render "ui/empty_state",
+              title: "No links found",
+              body: ([
+                ("matching \"#{@search}\"" if @search.present?),
+                ("in #{@filterable_workspaces.find { |w| w.id == @workspace_id.to_i }&.name}" if @workspace_id.present?)
+              ].compact.join(" ").presence) %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="text-center pt-6">
+    <%= link_to new_link_path,
+          class: "ui-btn-primary ui-btn-md",
+          data: { turbo_frame: "_top" } do %>
+      <%= render "shared/svg/add", class: "w-4 h-4" %>
+      <% if @pagy.count == 0 && !@search.present? && !@workspace_id.present? %>
+        <span>Create your first link</span>
+      <% else %>
+        <span>Create a new link</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @pagy.pages > 1 %>
+    <div class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-border">
+      <% if @pagy.previous %>
+        <%= link_to "Previous", dashboard_links_path(page: @pagy.previous, search: @search, workspace_id: @workspace_id),
+              class: "ui-btn-secondary ui-btn-sm",
+              data: { turbo_frame: "dashboard-links" } %>
+      <% end %>
+
+      <span class="text-sm text-muted-foreground px-2">
+        Page <%= @pagy.page %> of <%= @pagy.pages %>
+      </span>
+
+      <% if @pagy.next %>
+        <%= link_to "Next", dashboard_links_path(page: @pagy.next, search: @search, workspace_id: @workspace_id),
+              class: "ui-btn-secondary ui-btn-sm",
+              data: { turbo_frame: "dashboard-links" } %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

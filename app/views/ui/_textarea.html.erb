@@ -1,0 +1,15 @@
+<%# locals: (form:, field:, label: nil, hint: nil, placeholder: nil, value: nil, rows: 3, required: false) %>
+<div class="space-y-2">
+  <% if label.present? %>
+    <%= form.label field, label, class: "ui-label" %>
+  <% end %>
+  <%= form.text_area field,
+        value: value,
+        placeholder: placeholder,
+        rows: rows,
+        required: required,
+        class: "ui-textarea" %>
+  <% if hint.present? %>
+    <p class="ui-hint"><%= hint %></p>
+  <% end %>
+</div>

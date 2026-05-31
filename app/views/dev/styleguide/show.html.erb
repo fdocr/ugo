@@ -1,0 +1,234 @@
+<% content_for :title, "Styleguide" %>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+  <header>
+    <h1 class="text-3xl font-bold tracking-tight text-foreground">UI Styleguide</h1>
+    <p class="text-muted-foreground mt-2 max-w-2xl">
+      A living reference of the design system used across this app: tokens, primitives,
+      and example compositions. This page is only available in <code class="font-mono">development</code>.
+      When adding new screens, prefer reaching for these components first to keep things consistent.
+    </p>
+  </header>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Color tokens</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <% [
+        [ "primary",   "primary-600",   "bg-primary-600 text-white" ],
+        [ "danger",    "danger-600",    "bg-danger-600 text-white" ],
+        [ "success",   "success-600",   "bg-success-600 text-white" ],
+        [ "warning",   "warning-500",   "bg-warning-500 text-warning-900" ],
+        [ "info",      "info-600",      "bg-info-600 text-white" ],
+        [ "muted",     "muted",         "bg-muted text-foreground border border-border" ],
+        [ "card",      "card",          "bg-card text-card-foreground border border-border" ],
+        [ "page",      "page",          "bg-page text-foreground border border-border" ]
+      ].each do |label, token, classes| %>
+        <div class="rounded-md p-4 <%= classes %>">
+          <div class="text-sm font-semibold"><%= label %></div>
+          <div class="text-xs opacity-80 font-mono"><%= token %></div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Typography</h2>
+    <%= render "ui/card" do %>
+      <div class="space-y-3">
+        <p class="text-3xl font-bold text-foreground">Heading 1 — text-3xl font-bold</p>
+        <p class="text-2xl font-semibold text-foreground">Heading 2 — text-2xl font-semibold</p>
+        <p class="text-xl font-semibold text-foreground">Heading 3 — text-xl font-semibold</p>
+        <p class="text-base text-foreground">Body — text-base text-foreground</p>
+        <p class="text-sm text-muted-foreground">Muted — text-sm text-muted-foreground</p>
+        <p class="text-xs ui-hint">Hint — ui-hint</p>
+        <p class="font-mono text-sm text-foreground">Mono — font-mono</p>
+      </div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Buttons</h2>
+    <%= render "ui/card" do %>
+      <div class="space-y-4">
+        <div class="flex flex-wrap gap-2 items-center">
+          <button class="ui-btn-primary ui-btn-md">Primary</button>
+          <button class="ui-btn-secondary ui-btn-md">Secondary</button>
+          <button class="ui-btn-ghost ui-btn-md">Ghost</button>
+          <button class="ui-btn-danger ui-btn-md">Danger</button>
+          <button class="ui-btn-danger-outline ui-btn-md">Danger outline</button>
+          <a href="#" class="ui-btn-link">Link button</a>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button class="ui-btn-primary ui-btn-xs">Extra Small</button>
+          <button class="ui-btn-primary ui-btn-sm">Small</button>
+          <button class="ui-btn-primary ui-btn-md">Medium</button>
+          <button class="ui-btn-primary ui-btn-lg">Large</button>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button class="ui-btn-primary ui-btn-md" disabled>Disabled</button>
+          <button class="ui-btn-secondary ui-btn-md">
+            <%= render "shared/svg/gear", class: "w-4 h-4" %>
+            With icon
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Badges</h2>
+    <%= render "ui/card" do %>
+      <div class="flex flex-wrap gap-2">
+        <% %i[neutral primary success warning danger info].each do |tone| %>
+          <%= render "ui/badge", text: tone.to_s.titleize, tone: tone %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Form controls</h2>
+    <%= render "ui/card" do %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label class="ui-label">Text input</label>
+          <input type="text" class="ui-input" placeholder="hello@example.com">
+          <p class="ui-hint">A short helper hint about this field.</p>
+        </div>
+        <div class="space-y-2">
+          <label class="ui-label">Select</label>
+          <select class="ui-select">
+            <option>Choose…</option>
+            <option>Option A</option>
+            <option>Option B</option>
+          </select>
+        </div>
+        <div class="space-y-2 sm:col-span-2">
+          <label class="ui-label">Textarea</label>
+          <textarea class="ui-textarea" rows="3" placeholder="Multi-line text…"></textarea>
+        </div>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" class="ui-checkbox mt-0.5" checked>
+          <div>
+            <span class="text-sm font-medium text-foreground">Checkbox</span>
+            <p class="ui-hint">Use this whenever a boolean preference is exposed.</p>
+          </div>
+        </label>
+      </div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Banners</h2>
+    <div class="space-y-3">
+      <%= render "ui/banner", tone: :info,    title: "Info banner",    body: "Heads up: here's a bit of context." %>
+      <%= render "ui/banner", tone: :success, title: "Success banner", body: "All systems go." %>
+      <%= render "ui/banner", tone: :warning, title: "Warning banner", body: "You may want to take a closer look." %>
+      <%= render "ui/banner", tone: :danger,  title: "Danger banner",  body: "Something needs immediate attention." %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Cards & sections</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <%= render "ui/card" do %>
+        <div class="space-y-3">
+          <h3 class="text-lg font-semibold text-foreground">Default card</h3>
+          <p class="text-sm text-muted-foreground">
+            Cards group related content with a soft border and subtle shadow.
+          </p>
+          <div class="flex justify-end gap-2">
+            <button class="ui-btn-secondary ui-btn-sm">Cancel</button>
+            <button class="ui-btn-primary ui-btn-sm">Save</button>
+          </div>
+        </div>
+      <% end %>
+      <%= render "ui/card", tone: :warning do %>
+        <h3 class="text-lg font-semibold text-foreground">Warning-toned card</h3>
+        <p class="text-sm text-muted-foreground mt-1">For trial states and other gentle nudges.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Stats</h2>
+    <%= render "ui/card" do %>
+      <%= render "ui/stat_grid", cols: 4 do %>
+        <%= render "ui/stat", value: 1_284,  label: "Visits" %>
+        <%= render "ui/stat", value: 42,    label: "Links",     tone: :info %>
+        <%= render "ui/stat", value: 8,     label: "Workspaces", tone: :success %>
+        <%= render "ui/stat", value: "94%", label: "Uptime",    tone: :warning %>
+      <% end %>
+    <% end %>
+    <div class="mt-4">
+      <%= render "ui/card" do %>
+        <%= render "ui/stat_grid", cols: 5 do %>
+          <%= render "ui/stat", value: 1_284, label: "Total Visits" %>
+          <%= render "ui/stat", value: 312,   label: "Unique Visitors", tone: :info %>
+          <%= render "ui/stat", value: 184,   label: "Peak Day" %>
+          <%= render "ui/stat", value: 42.3,  label: "Avg/Day" %>
+          <%= render "ui/stat", value: 17,    label: "Countries" %>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Empty & loading states</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <%= render "ui/card" do %>
+        <%= render "ui/empty_state",
+              title: "No links yet",
+              body: "Create your first link to get started." %>
+      <% end %>
+      <%= render "ui/card" do %>
+        <%= render "ui/loading", label: "Crunching numbers…" %>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Tabs & segmented controls</h2>
+    <%= render "ui/card" do %>
+      <div class="space-y-6">
+        <div data-controller="tabs">
+          <div class="flex border-b border-border" role="tablist">
+            <button class="ui-tab" data-tabs-target="tab" data-state="active" data-action="click->tabs#switch" data-tabs-id-param="overview">Overview</button>
+            <button class="ui-tab" data-tabs-target="tab" data-action="click->tabs#switch" data-tabs-id-param="settings">Settings</button>
+            <button class="ui-tab" data-tabs-target="tab" data-action="click->tabs#switch" data-tabs-id-param="advanced">Advanced</button>
+          </div>
+          <div class="pt-4 text-sm text-muted-foreground">
+            Tab content area — driven by the existing tabs Stimulus controller via <code class="font-mono">data-state</code>.
+          </div>
+        </div>
+
+        <%= render "ui/segmented",
+              align: :start,
+              options: [
+                { label: "Today",      href: "#", active: true },
+                { label: "This Week",  href: "#" },
+                { label: "This Month", href: "#" }
+              ] %>
+      </div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-4 text-foreground">Tables</h2>
+    <%= render "ui/card" do %>
+      <%= render "ui/table", headers: [ "Name", "Plan", "Status" ] do %>
+        <% [
+          [ "Acme",      "Growth", :success ],
+          [ "Wonderly",  "Basic",  :primary ],
+          [ "Free Bird", "Free",   :neutral ]
+        ].each do |name, plan, tone| %>
+          <tr class="border-b border-border last:border-0 hover:bg-accent/50">
+            <td class="py-3 px-2 font-medium text-foreground"><%= name %></td>
+            <td class="py-3 px-2"><%= render "ui/badge", text: plan, tone: tone %></td>
+            <td class="py-3 px-2 text-muted-foreground">Active</td>
+          </tr>
+        <% end %>
+      <% end %>
+    <% end %>
+  </section>
+</div>

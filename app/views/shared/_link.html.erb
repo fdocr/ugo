@@ -1,0 +1,19 @@
+<div class="flex items-center justify-between gap-3 p-4 rounded-lg" data-controller="clipboard" data-clipboard-success-content-value="Copied!">
+  <div class="flex items-center gap-3 min-w-0 flex-1">
+    <span class="text-muted-foreground/70 flex-shrink-0">
+      <%= render "shared/svg/link", class: "w-5 h-5" %>
+    </span>
+    <div class="min-w-0 flex-1">
+      <h3 class="text-lg font-semibold truncate text-foreground"><%= link.domain_url %></h3>
+      <span class="hidden" aria-hidden="true" data-clipboard-target="source">https://<%= link.domain_url %></span>
+    </div>
+  </div>
+
+  <button type="button"
+          data-action="clipboard#copy"
+          data-clipboard-target="button"
+          class="ui-btn-secondary ui-btn-sm flex-shrink-0">
+    <%= render "shared/svg/copy", class: "w-4 h-4" %>
+    <span>Copy</span>
+  </button>
+</div>

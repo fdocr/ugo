@@ -1,0 +1,40 @@
+<%# locals: (text: nil, variant: :primary, size: :md, icon: nil, type: "submit", href: nil, method: nil, confirm: nil, params: nil, full: false, disabled: false, extra_class: nil, form_options: {}) %>
+<%
+  variant_class = case variant.to_sym
+  when :primary  then "ui-btn-primary"
+  when :secondary then "ui-btn-secondary"
+  when :ghost    then "ui-btn-ghost"
+  when :danger   then "ui-btn-danger"
+  when :danger_outline then "ui-btn-danger-outline"
+  else "ui-btn-primary"
+  end
+
+  size_class = case size.to_sym
+  when :sm then "ui-btn-sm"
+  when :lg then "ui-btn-lg"
+  else "ui-btn-md"
+  end
+
+  classes = [ variant_class, size_class, ("w-full" if full), extra_class ].compact.join(" ")
+
+  inner = capture do %>
+    <% if icon.present? %>
+      <%= render "shared/svg/#{icon}", class: "w-4 h-4" %>
+    <% end %>
+    <% if block_given? %>
+      <%= yield %>
+    <% elsif text.present? %>
+      <span><%= text %></span>
+    <% end %>
+<% end %>
+
+<% if href.present? && method.blank? %>
+  <%= link_to href, class: classes do %><%= inner %><% end %>
+<% elsif href.present? %>
+  <%= button_to href, method: method, params: params,
+        class: classes,
+        disabled: disabled,
+        form: form_options.deep_merge(data: { turbo_confirm: confirm }.compact) do %><%= inner %><% end %>
+<% else %>
+  <button type="<%= type %>" class="<%= classes %>" <%= "disabled" if disabled %>><%= inner %></button>
+<% end %>

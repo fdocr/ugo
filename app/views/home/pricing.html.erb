@@ -1,0 +1,239 @@
+<%
+  basic_features = [
+    "<strong>1,000</strong> links at ugo.cr".html_safe,
+    "<strong>10,000</strong> events/month".html_safe,
+    "<strong>3 months</strong> data retention".html_safe,
+    "Weekly & monthly email digests",
+    "Detailed analytics",
+    "URL Builder, Social Previews & QR codes"
+  ]
+  growth_features = [
+    "<strong>3,000</strong> links at ugo.cr".html_safe,
+    "<strong>50,000</strong> events/month".html_safe,
+    "<strong>3 months</strong> data retention".html_safe,
+    "Weekly & monthly email digests",
+    "Detailed analytics",
+    "URL Builder, Social Previews & QR codes"
+  ]
+%>
+
+<div class="min-h-screen">
+  <!-- Top CTA Section -->
+  <div class="mx-auto px-4 py-16 sm:py-24">
+    <div class="text-center max-w-3xl mx-auto">
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-foreground/90 mb-4">
+        Simple, transparent pricing
+      </h1>
+      <p class="text-lg text-muted-foreground mb-8">
+        Every hosted plan includes detailed analytics, the URL builder, social previews, and QR codes. Need deep linking into your native app? Choose Dedicated or self-host ugo on your own domain.
+      </p>
+
+      <% if authenticated? %>
+        <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+      <% else %>
+        <%= link_to "Start Your Free Trial", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Trial Callout + Pricing Cards -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="mx-auto px-4">
+      <!-- Trial callout -->
+      <div class="max-w-2xl mx-auto mb-10">
+        <%= render "ui/banner",
+              tone: :warning,
+              title: "14-day free trial on Basic - Unlimited free trial during open beta period though!",
+              body: "Full Basic features for the duration of the free trial. No credit card required. Subscribe anytime to keep access, or upgrade to Growth for higher limits." %>
+      </div>
+
+      <div id="pricing-grid" class="gap-6" style="max-width: 960px; margin-left: auto; margin-right: auto;">
+        <!-- Basic Plan -->
+        <div class="rounded-lg border-2 border-primary-600 bg-card p-6 shadow-card flex flex-col relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="bg-primary-600 text-white text-xs font-medium px-3 py-1 rounded-full">Free trial</span>
+          </div>
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2 text-foreground">Basic</h3>
+            <div class="flex items-baseline gap-1">
+              <span class="text-4xl font-bold text-foreground">$9</span>
+              <span class="text-muted-foreground">/month</span>
+            </div>
+            <p class="text-sm text-muted-foreground mt-2">Best price for small projects</p>
+          </div>
+
+          <div class="space-y-4 flex-grow">
+            <% basic_features.each do |feat| %>
+              <div class="flex items-center gap-3">
+                <span class="text-success-600 flex-shrink-0">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground"><%= feat %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-8">
+            <% if authenticated? %>
+              <%= link_to "Manage my plan", dashboard_path, class: "ui-btn-primary ui-btn-md w-full" %>
+            <% else %>
+              <%= link_to "Start Free Trial", sign_up_path, class: "ui-btn-primary ui-btn-md w-full" %>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Growth Plan -->
+        <div class="rounded-lg border border-border bg-card p-6 shadow-card flex flex-col">
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2 text-foreground">Growth</h3>
+            <div class="flex items-baseline gap-1">
+              <span class="text-4xl font-bold text-foreground">$19</span>
+              <span class="text-muted-foreground">/month</span>
+            </div>
+            <p class="text-sm text-muted-foreground mt-2">Best for growing teams</p>
+          </div>
+
+          <div class="space-y-4 flex-grow">
+            <% growth_features.each do |feat| %>
+              <div class="flex items-center gap-3">
+                <span class="text-success-600 flex-shrink-0">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground"><%= feat %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-8">
+            <% if authenticated? %>
+              <%= link_to "Manage my plan", dashboard_path, class: "ui-btn-primary ui-btn-md w-full" %>
+            <% else %>
+              <%= link_to "Get Started", sign_up_path, class: "ui-btn-primary ui-btn-md w-full" %>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Dedicated Plan -->
+        <div class="rounded-lg border border-border bg-card p-6 shadow-card flex flex-col">
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2 text-foreground">Dedicated</h3>
+            <div class="flex items-baseline gap-1">
+              <span class="text-4xl font-bold text-foreground">$49</span>
+              <span class="text-muted-foreground">/month</span>
+            </div>
+            <p class="text-sm text-muted-foreground mt-2">Dedicated instance just for you</p>
+          </div>
+
+          <div class="space-y-4 flex-grow">
+            <% [
+              ["<strong>Unlimited</strong> links".html_safe, false],
+              ["<strong>Unlimited</strong> events/month".html_safe, false]
+            ].each do |feat, _| %>
+              <div class="flex items-center gap-3">
+                <span class="text-success-600 flex-shrink-0">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground"><%= feat %></span>
+              </div>
+            <% end %>
+            <div class="flex items-start gap-3">
+              <span class="text-success-600 flex-shrink-0 mt-0.5">
+                <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+              </span>
+              <div>
+                <span class="text-sm text-foreground"><strong>Unlimited</strong> retention <br> (<strong>60 GiB</strong> storage)</span>
+                <p class="text-xs text-muted-foreground mt-1">
+                  Need more? <%= link_to "Get in touch", "mailto:hello@ugo.cr?subject=Custom Storage for Dedicated Plan", class: "ui-btn-link" %>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="text-success-600 flex-shrink-0 mt-0.5">
+                <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+              </span>
+              <div>
+                <span class="text-sm text-foreground"><%= render "shared/url_badge", url: "*.ugo.cr" %> subdomain <strong>or</strong> your own domain</span>
+                <p class="text-xs text-muted-foreground mt-1">We'll help you set it up</p>
+              </div>
+            </div>
+            <% [
+              "Deep linking into native apps",
+              "Weekly & monthly email digests",
+              "Detailed analytics",
+              "URL Builder, Social Previews & QR codes",
+              "Priority support"
+            ].each do |feat| %>
+              <div class="flex items-center gap-3">
+                <span class="text-success-600 flex-shrink-0">
+                  <%= render "shared/svg/checkmark", class: "w-5 h-5" %>
+                </span>
+                <span class="text-sm text-foreground"><%= feat %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-8">
+            <%= link_to "Contact Us", "mailto:hello@ugo.cr?subject=Dedicated Plan Inquiry", class: "ui-btn-secondary ui-btn-md w-full" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Self-Host Section -->
+  <div class="py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto">
+        <div class="rounded-lg border border-border bg-card/50 p-8 text-center">
+          <div class="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-4 text-success-600">
+            <%= render "shared/svg/branch", class: "w-6 h-6" %>
+          </div>
+          <h3 class="text-xl font-semibold mb-2 text-foreground">Prefer to self-host?</h3>
+          <p class="text-muted-foreground mb-6">
+            ugo is open source. Run it on your own infrastructure with full control including deep linking, unlimited links, and every feature. You handle the setup (server, DNS, maintenance).
+          </p>
+          <% if Flipper.enabled?(:open_sourced) %>
+            <%= link_to "https://github.com/fdocr/ugo", target: "_blank", rel: "noopener noreferrer", class: "ui-btn-secondary ui-btn-md" do %>
+              <%= render "shared/svg/github", class: "w-5 h-5" %>
+              View on GitHub
+            <% end %>
+          <% else %>
+            <%= link_to "Self-Hosting Guide", self_host_path, class: "ui-btn-secondary ui-btn-md" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA Section -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl sm:text-4xl font-bold text-foreground/90 mb-4">Ready to take control of your links?</h2>
+        <p class="text-muted-foreground mb-2">Short links, UTM tags, social previews, and analytics on every hosted plan. Deep linking on Dedicated and self-hosted.</p>
+        <p class="text-muted-foreground mb-8">Start your 14-day free trial — no credit card required.</p>
+
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "Start Your Free Trial", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%= render "shared/footer" %>
+</div>
+
+<style>
+  #pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    #pricing-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    #pricing-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>

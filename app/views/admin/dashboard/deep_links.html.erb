@@ -1,0 +1,54 @@
+<%= turbo_frame_tag "admin-deep-links" do %>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+    <%= render "ui/search_field",
+          url: admin_deep_links_path,
+          value: @search,
+          placeholder: "Search by destination URL or host...",
+          frame: "admin-deep-links",
+          hidden_fields: { sort: @sort },
+          clear_url: admin_deep_links_path(sort: @sort),
+          clear_visible: @search.present? %>
+
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-muted-foreground">Sort:</span>
+      <%= render "ui/segmented",
+            frame: "admin-deep-links",
+            options: [
+              { label: "Most bounces (7d)", href: admin_deep_links_path(sort: "visits", search: @search), active: @sort == "visits" },
+              { label: "Recent", href: admin_deep_links_path(sort: "recent", search: @search), active: @sort == "recent" }
+            ] %>
+    </div>
+  </div>
+
+  <%= render "ui/table", headers: [ "Destination", "Host", "Bounces (7d)", "First seen" ] do %>
+    <% if @deep_links.any? %>
+      <% @deep_links.each do |deep_link| %>
+        <tr class="border-b border-border last:border-0 hover:bg-accent/50">
+          <td class="py-3 px-2">
+            <div class="text-sm text-foreground break-all"><%= deep_link.destination_url %></div>
+          </td>
+          <td class="py-3 px-2 text-muted-foreground font-mono text-sm">
+            <%= deep_link.destination_host %>
+          </td>
+          <td class="py-3 px-2">
+            <span class="font-medium text-foreground"><%= number_with_delimiter(deep_link.recent_visits_count) %></span>
+          </td>
+          <td class="py-3 px-2 text-muted-foreground">
+            <%= deep_link.created_at.strftime("%b %d, %Y") %>
+          </td>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr>
+        <td colspan="4" class="py-8 text-center text-muted-foreground">
+          No deep link destinations yet<%= " matching \"#{@search}\"" if @search.present? %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/pagination",
+        pagy: @pagy,
+        frame: "admin-deep-links",
+        path: ->(p) { admin_deep_links_path(p.merge(sort: @sort, search: @search)) } %>
+<% end %>

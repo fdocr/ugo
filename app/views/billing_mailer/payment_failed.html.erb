@@ -1,0 +1,18 @@
+<h2 style="margin-top: 0;">Payment failed</h2>
+
+<p>Hi there,</p>
+
+<p>We were unable to process the payment of <strong>$<%= format("%.2f", @subscription.amount_dollars) %> <%= @subscription.currency %></strong> for the <strong><%= @workspace.name %></strong> workspace.</p>
+
+<p>Please update your payment method to avoid losing access to your Basic plan features. We'll retry the charge automatically, but after multiple failures your workspace will be downgraded to the Free plan.</p>
+
+<p style="margin-top: 1.5rem;">
+  <a href="<%= @manage_url %>" class="button" style="display: inline-block; padding: 0.75rem 1.25rem; background-color: #255c95; color: #fff; text-decoration: none; border-radius: 0.375rem; font-weight: 500;">
+    Update payment method
+  </a>
+</p>
+
+<p style="color: #64748b; font-size: 0.875rem; margin-top: 1.5rem;">
+  You can also <a href="<%= @billing_url %>" style="color: #255c95;">view your billing page</a> for more details.
+  If you believe this is an error, please contact us at hello@ugo.cr.
+</p>

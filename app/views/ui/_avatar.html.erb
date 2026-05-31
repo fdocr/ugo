@@ -1,0 +1,19 @@
+<%# locals: (text:, tone: :primary, size: :md) %>
+<%
+  size_class = case size.to_sym
+  when :sm then "w-6 h-6 text-xs"
+  when :lg then "w-10 h-10 text-base"
+  else "w-8 h-8 text-sm"
+  end
+  tone_class = case tone.to_sym
+  when :warning then "bg-warning-100 text-warning-800"
+  when :success then "bg-success-100 text-success-700"
+  when :danger then "bg-danger-100 text-danger-700"
+  when :info then "bg-info-100 text-info-700"
+  else "bg-primary-100 text-primary-700"
+  end
+  initial = text.to_s.strip.chars.first&.upcase || "?"
+%>
+<span class="inline-flex items-center justify-center rounded-full font-medium flex-shrink-0 <%= size_class %> <%= tone_class %>">
+  <%= initial %>
+</span>

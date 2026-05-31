@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+@source "../../views";
+@source "../../helpers";
+@source "../../javascript";
+@source "../../../public/*.html";
+
+@theme {
+  /* ─────────────────────────────────────────────────────────────
+     Color palettes
+     ───────────────────────────────────────────────────────────── */
+
+  /* Primary: sky-blue brand */
+  --color-primary-50: #f0f7fc;
+  --color-primary-100: #e0eef9;
+  --color-primary-200: #bcddf2;
+  --color-primary-300: #8ac5eb;
+  --color-primary-400: #5aa9e6;
+  --color-primary-500: #3b8fd8;
+  --color-primary-600: #2b73b8;
+  --color-primary-700: #255c95;
+  --color-primary-800: #234d7a;
+  --color-primary-900: #214266;
+  --color-primary-950: #142844;
+  --color-primary: #5aa9e6;
+
+  /* Secondary (kept for legacy) */
+  --color-secondary-50: #f0f7fe;
+  --color-secondary-100: #deeffe;
+  --color-secondary-200: #c4e5fd;
+  --color-secondary-300: #9ed5fb;
+  --color-secondary-400: #7fc8f8;
+  --color-secondary-500: #4eaef2;
+  --color-secondary-600: #3b8fe4;
+  --color-secondary-700: #2f73cd;
+  --color-secondary-800: #2a5fa7;
+  --color-secondary-900: #264f83;
+  --color-secondary-950: #1a304d;
+  --color-secondary: #7fc8f8;
+
+  /* Success (green) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success: #16a34a;
+
+  /* Warning (amber) */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+  --color-warning: #d97706;
+
+  /* Danger / Destructive */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+  --color-danger-950: #450a0a;
+  --color-danger: #ef4444;
+  --color-destructive: #ef4444;
+
+  /* Info (used for "Dedicated" plan, system info banners) */
+  --color-info-50: #f5f3ff;
+  --color-info-100: #ede9fe;
+  --color-info-600: #7c3aed;
+  --color-info-700: #6d28d9;
+  --color-info: #7c3aed;
+
+  /* Neutral (slate-based muted UI) */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral: #64748b;
+
+  /* ─────────────────────────────────────────────────────────────
+     Semantic UI colors
+     ───────────────────────────────────────────────────────────── */
+
+  /* The page sits on a soft off-white. Cards lift on top in pure white. */
+  --color-page: #fafafa;
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+
+  --color-ring: #5aa9e6;
+  --color-ring-offset: #ffffff;
+
+  /* ─────────────────────────────────────────────────────────────
+     Typography
+     ───────────────────────────────────────────────────────────── */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* ─────────────────────────────────────────────────────────────
+     Radius / shadow tokens
+     Components in app/views/ui/ should reach for these tokens
+     instead of hand-picking rounded-md/rounded-lg/shadow-sm/etc.
+     ───────────────────────────────────────────────────────────── */
+  --radius-control: 0.375rem;  /* md: buttons, inputs, badges */
+  --radius-card: 0.5rem;       /* lg: cards, banners */
+  --radius-pill: 9999px;       /* full: pills */
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04);
+  --shadow-popover: 0 8px 24px rgb(15 23 42 / 0.12), 0 2px 6px rgb(15 23 42 / 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Base layer
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-foreground);
+  }
+
+  /* Lock <a> defaults to inherit color so our component classes win */
+  a {
+    color: inherit;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Component primitives
+   These named utilities let view code stay short and let the
+   tabs/segmented/filter Stimulus controllers toggle a single
+   data-state attribute instead of mutating Tailwind classes.
+   ───────────────────────────────────────────────────────────── */
+@layer components {
+  /* Tabs (used by tabs_controller) */
+  .ui-tab {
+    @apply pb-3 text-sm font-medium transition-colors text-muted-foreground hover:text-foreground border-b-2 border-transparent cursor-pointer;
+  }
+  .ui-tab[data-state="active"] {
+    @apply border-primary-600 text-primary-600;
+  }
+
+  /* Segmented controls (time range, devices/browsers/OS, country/region/city, sort) */
+  .ui-segmented {
+    @apply inline-flex flex-wrap gap-1 bg-primary-50/50 p-1 rounded-lg border border-primary-100/60;
+  }
+  .ui-segmented-option {
+    @apply px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-primary-700 cursor-pointer;
+  }
+  .ui-segmented-option[data-state="active"] {
+    @apply bg-white text-primary-700 shadow-card;
+  }
+  .ui-segmented-lg .ui-segmented-option {
+    @apply px-4 py-2.5 text-sm rounded-lg;
+  }
+
+  /* Card surface */
+  .ui-card {
+    @apply rounded-lg border border-border bg-card text-card-foreground shadow-card;
+  }
+  .ui-card-padded {
+    @apply p-6;
+  }
+
+  /* Form controls */
+  .ui-input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm
+           ring-offset-background placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .ui-input-readonly {
+    @apply flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground
+           ring-offset-background placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .ui-textarea {
+    @apply flex w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed resize-y
+           ring-offset-background placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .ui-select {
+    @apply flex h-10 w-full rounded-md border border-input bg-background pl-3 pr-8 py-2 text-sm appearance-none bg-no-repeat
+           ring-offset-background placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-size: 1rem 1rem;
+  }
+  .ui-search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  @media (min-width: 640px) {
+    .ui-search-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      align-items: center;
+    }
+  }
+
+  .ui-label {
+    @apply block text-sm font-medium leading-none text-foreground;
+  }
+  .ui-hint {
+    @apply text-xs text-muted-foreground;
+  }
+  .ui-checkbox {
+    @apply h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer;
+  }
+
+  /* Buttons
+     Each named variant inlines the shared base so we don't rely on
+     @apply chaining, which Tailwind v4 doesn't support across custom
+     components. */
+  .ui-btn-md { @apply h-10 px-4 py-2; }
+  .ui-btn-sm { @apply h-9 px-3 py-1.5 text-sm; }
+  .ui-btn-xs { @apply h-7 px-2.5 py-1 text-xs; }
+  .ui-btn-lg { @apply h-11 px-6 py-2; }
+  .ui-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium
+           transition-colors cursor-pointer bg-primary-600 text-white hover:bg-primary-700
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .ui-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium
+           transition-colors cursor-pointer border border-input bg-background text-foreground
+           hover:bg-accent hover:text-accent-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .ui-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium
+           transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .ui-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium
+           transition-colors cursor-pointer bg-danger-600 text-white hover:bg-danger-700
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .ui-btn-danger-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium
+           transition-colors cursor-pointer border border-danger-200 text-danger-600 hover:bg-danger-50
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .ui-btn-link { @apply font-medium text-primary-600 hover:text-primary-700 hover:underline transition-colors; }
+
+  .ui-icon-btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium
+           transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent
+           h-9 w-9
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Badges */
+  .ui-badge {
+    @apply inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset;
+  }
+  .ui-badge-sm { @apply px-2 py-0.5 rounded-full; }
+  .ui-badge-neutral { @apply bg-neutral-50 text-neutral-600 ring-neutral-500/15; }
+  .ui-badge-primary { @apply bg-primary-50 text-primary-700 ring-primary-700/15; }
+  .ui-badge-success { @apply bg-success-50 text-success-700 ring-success-700/15; }
+  .ui-badge-warning { @apply bg-warning-50 text-warning-800 ring-warning-600/20; }
+  .ui-badge-danger { @apply bg-danger-50 text-danger-800 ring-danger-600/15; }
+  .ui-badge-info { @apply bg-info-50 text-info-700 ring-info-700/15; }
+
+  /* ─────────────────────────────────────────────────────────────
+     Nav menu (the dropdown). On md+ it floats as a small popover.
+     On small viewports it expands to a full-bleed sheet anchored
+     to the top so it's actually usable on phones.
+     ───────────────────────────────────────────────────────────── */
+  .ui-nav-menu-panel {
+    @apply absolute right-0 top-full mt-2 mr-3
+           bg-white rounded-md border border-border shadow-popover
+           flex flex-col gap-1 p-2 origin-top-right
+           min-w-[200px];
+  }
+  @media (max-width: 640px) {
+    .ui-nav-menu-panel {
+      @apply right-3 left-3 mr-0 mt-3 p-3 gap-1.5 origin-top rounded-lg;
+    }
+  }
+  .ui-nav-link {
+    @apply px-4 py-2.5 sm:py-2 rounded-md text-sm font-medium
+           text-foreground hover:text-white hover:bg-primary-700 transition-colors;
+  }
+  .ui-nav-link-logo {
+    @apply px-4 py-2 rounded-md hidden sm:flex;
+  }
+  .ui-nav-link-danger {
+    @apply px-4 py-2.5 sm:py-2 rounded-md text-sm font-medium text-left w-full
+           text-danger-700 hover:text-white hover:bg-danger-700 transition-colors cursor-pointer;
+  }
+  .ui-nav-sep {
+    @apply border-border my-2;
+  }
+
+  /* Banners */
+  .ui-banner-info    { @apply rounded-lg border p-4 text-sm border-primary-100 bg-primary-50/60 text-primary-900; }
+  .ui-banner-warning { @apply rounded-lg border p-4 text-sm border-warning-200 bg-warning-50/80 text-warning-900; }
+  .ui-banner-success { @apply rounded-lg border p-4 text-sm border-success-100 bg-success-50/80 text-success-700; }
+  .ui-banner-danger  { @apply rounded-lg border p-4 text-sm border-danger-200 bg-danger-50/60 text-danger-900; }
+}

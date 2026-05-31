@@ -1,0 +1,23 @@
+one:
+  app_name: "ugo"
+  app_domain: "ugo.cr"
+  setup_completed: true
+  smtp_address: ""
+  smtp_port: 587
+  smtp_username: ""
+  smtp_password: ""
+  smtp_from_email: "noreply@example.com"
+  admin_api_key: "test-admin-api-key"
+  setup_code: ""
+  polar_access_token: ""
+  polar_webhook_secret: ""
+  polar_basic_product_id: ""
+  polar_growth_product_id: ""
+  polar_sandbox: false
+  honeybadger_api_key: ""
+  admin_scripts: ""
+  deep_link_enabled: false
+  deep_link_ios_app_ids: ""
+  deep_link_android_asset_links: ""
+  deep_link_allowed_domains: ""
+  deep_link_default_destination: ""

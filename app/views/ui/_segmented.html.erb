@@ -1,0 +1,15 @@
+<%# locals: (options:, frame: nil, size: :md, align: :start)
+     options is an array of hashes:
+       { label: "Today", href: "/...", active: true }
+%>
+<div class="<%= "flex justify-center" if align == :center %>">
+  <div class="<%= ["ui-segmented", ("ui-segmented-lg" if size == :lg)].compact.join(" ") %>">
+    <% options.each do |opt| %>
+      <%= link_to opt[:href],
+            class: "ui-segmented-option",
+            data: ({ "state": "active" } if opt[:active]).to_h.merge(({ turbo_frame: frame } if frame).to_h) do %>
+        <%= opt[:label] %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <%= render "ui/card", padding: :lg do %>
+      <div class="space-y-2 text-center mb-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
+        <p class="text-sm text-muted-foreground">Sign in to your account to continue</p>
+      </div>
+
+      <%= form_with url: session_url, class: "space-y-5" do |form| %>
+        <%= render "ui/input",
+              form: form, field: :email, type: :email, label: "Email",
+              placeholder: "name@example.com",
+              value: params[:email],
+              required: true, autofocus: true, autocomplete: "email" %>
+
+        <div class="space-y-2">
+          <%= form.label :password, "Password", class: "ui-label" %>
+          <%= form.password_field :password,
+                required: true,
+                autocomplete: "current-password",
+                placeholder: "••••••••",
+                maxlength: 72,
+                class: "ui-input" %>
+        </div>
+
+        <%= form.submit "Sign in", class: "ui-btn-primary ui-btn-md w-full" %>
+
+        <div class="text-center">
+          <%= link_to "Forgot password?", new_password_path, class: "text-xs text-muted-foreground hover:text-primary-600 transition-colors" %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% unless self_hosted? %>
+      <p class="text-center text-sm text-muted-foreground mt-6">
+        Don't have an account?
+        <%= link_to "Create one for free", sign_up_path, class: "ui-btn-link" %>
+      </p>
+    <% end %>
+  </div>
+</div>

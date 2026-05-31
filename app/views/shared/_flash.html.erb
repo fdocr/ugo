@@ -1,0 +1,30 @@
+<% if flash[:notice] || flash[:alert] %>
+  <%
+    is_alert = flash[:alert].present?
+    surface = is_alert ? "border-danger-200" : "border-border"
+    icon_partial = is_alert ? "alert" : "notice"
+  %>
+  <div
+    data-controller="notification"
+    data-notification-delay-value="12000"
+    class="fixed right-4 top-28 bg-white rounded-lg p-4 w-11/12 sm:max-w-sm transition duration-300 flex items-start z-20 border <%= surface %> shadow-popover"
+    data-transition-enter-from="opacity-0 translate-y-6"
+    data-transition-enter-to="opacity-100 translate-y-0"
+    data-transition-leave-from="opacity-100 translate-y-0"
+    data-transition-leave-to="opacity-0 translate-y-6"
+    data-notification-target="container"
+  >
+    <div class="mr-3 flex-shrink-0">
+      <%= render "shared/svg/#{icon_partial}" %>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-medium text-foreground"><%= flash[:notice] || flash[:alert] %></p>
+    </div>
+    <div class="ml-3 flex-shrink-0">
+      <button data-action="notification#hide" aria-label="Dismiss"
+              class="inline-flex text-muted-foreground hover:text-foreground focus:outline-none">
+        <%= render "shared/svg/close", class: "h-5 w-5" %>
+      </button>
+    </div>
+  </div>
+<% end %>

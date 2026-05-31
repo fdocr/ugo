@@ -1,0 +1,13 @@
+You've been invited to <%= @workspace.name %>
+
+<%= @invited_by.email %> has invited you to join their workspace on ugo.cr as a <%= @invitation.role %>.
+
+Sign in to your existing account or create a new one to accept the invitation.
+
+Sign in: <%= @sign_in_url %>
+Create account: <%= @sign_up_url %>
+
+Make sure to use this email address (<%= @invitation.email %>) when signing up to automatically join the workspace.
+
+Thanks,
+ugo.cr

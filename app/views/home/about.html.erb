@@ -1,0 +1,80 @@
+<div class="min-h-screen">
+  <!-- Hero -->
+  <div class="container mx-auto px-4 py-16 sm:py-24">
+    <div class="max-w-2xl mx-auto text-center">
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-foreground/90 mb-4">
+        Link management that respects you
+      </h1>
+      <p class="text-lg text-muted-foreground">
+        ugo is an open source URL shortener with analytics, built for people who want control over their links and their data. No bloat, no lock-in.
+      </p>
+    </div>
+  </div>
+
+  <!-- What you get -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <% [
+            { icon: "link", title: "Short links & QR codes", body: "Turn long URLs into clean links. Every link gets a QR code automatically." },
+            { icon: "chart_bar", title: "Click analytics", body: "See who clicks, from where, and on what device. No third-party trackers involved." },
+            { icon: "figure", title: "UTM builder", body: "Tag links with UTM parameters so your campaigns flow straight into Google Analytics, Plausible, or whatever you use." },
+            { icon: "users", title: "Team workspaces", body: "Organize links by team or project. Invite members and share analytics." }
+          ].each do |feat| %>
+            <div>
+              <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center mb-3 text-primary-600">
+                <%= render "shared/svg/#{feat[:icon]}", class: "w-5 h-5" %>
+              </div>
+              <h3 class="font-semibold mb-1 text-foreground"><%= feat[:title] %></h3>
+              <p class="text-sm text-muted-foreground"><%= feat[:body] %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Source -->
+  <div class="py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto text-center">
+        <div class="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center mx-auto mb-4 text-success-600">
+          <%= render "shared/svg/branch", class: "w-6 h-6" %>
+        </div>
+        <h2 class="text-2xl font-bold text-foreground/90 mb-3">Open source, no strings attached</h2>
+        <% if Flipper.enabled?(:open_sourced) %>
+          <p class="text-muted-foreground mb-6">
+            The full source code is on GitHub. Inspect it, fork it, or self-host it on your own infrastructure. We also offer <%= link_to "hosted plans", pricing_path, class: "ui-btn-link" %> if you'd rather not manage servers.
+          </p>
+        <% else %>
+          <p class="text-muted-foreground mb-6">
+            ugo is going open source soon. We want you to be able to inspect the code, self-host on your own infrastructure, or even contribute improvements. We're refining details in these early days but give ugo a free try in the mean time.
+          </p>
+        <% end %>
+        <%= link_to "https://github.com/fdocr/ugo", target: "_blank", rel: "noopener noreferrer", class: "ui-btn-secondary ui-btn-md" do %>
+          <%= render "shared/svg/github", class: "w-5 h-5" %>
+          View on GitHub
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="container mx-auto px-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-foreground/90 mb-4">Ready to try it?</h2>
+        <p class="text-muted-foreground mb-8">Create your first short link in seconds. Free to start, no credit card required.</p>
+
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "Create Your Free Account", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%= render "shared/footer" %>
+</div>

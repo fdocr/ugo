@@ -1,0 +1,68 @@
+<% if workspace.ugo_access_blocked? %>
+  <% if workspace.admin?(Current.user) %>
+    <%= link_to workspace_billing_path(workspace), class: "block", data: { turbo_frame: "_top" } do %>
+      <div class="group flex flex-col gap-3 p-4 rounded-md border border-danger-200 bg-danger-50/40 hover:bg-danger-50/70 transition-colors">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <span class="text-muted-foreground/70 flex-shrink-0">
+              <%= render "shared/svg/folder", class: "w-4 h-4" %>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-medium text-foreground"><%= workspace.name %></span>
+                <%= plan_badge(workspace) %>
+              </div>
+              <p class="text-xs text-muted-foreground/70 mt-1">Trial ended · <%= pluralize(workspace.links.count, "link") %> paused</p>
+            </div>
+          </div>
+          <span class="text-xs font-medium text-primary-700 flex-shrink-0">Subscribe →</span>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="flex flex-col gap-2 p-4 rounded-md border border-dashed border-muted-foreground/30 bg-muted/20">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="text-muted-foreground/70 flex-shrink-0">
+          <%= render "shared/svg/folder", class: "w-4 h-4" %>
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-medium text-foreground"><%= workspace.name %></span>
+            <%= plan_badge(workspace) %>
+          </div>
+          <p class="text-xs text-muted-foreground/70 mt-1"><%= pluralize(workspace.links.count, "link") %> paused · ask an admin to subscribe</p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="space-y-2">
+    <% if workspace.trial? %>
+      <%# Rendered as a sibling above the card link (not inside it) so the banner's inner anchors don't get nested inside the card's outer link, which would otherwise split the DOM and break the banner's layout. %>
+      <%= render "workspace/trial_banner", workspace: workspace %>
+    <% end %>
+    <%= link_to workspace_path(workspace.id), class: "block", data: { turbo_frame: "_top" } do %>
+      <div class="group flex items-center justify-between p-4 rounded-md border border-border hover:bg-accent/50 transition-colors">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <span class="text-muted-foreground/70 flex-shrink-0">
+            <%= render "shared/svg/folder", class: "w-4 h-4" %>
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-medium text-foreground"><%= workspace.name %></span>
+              <%= plan_badge(workspace) %>
+            </div>
+            <p class="text-xs text-muted-foreground/70 mt-1"><%= pluralize(workspace.links.count, "link") %></p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <span class="text-xs text-muted-foreground">View</span>
+          <span class="text-muted-foreground/50">
+            <%= render "shared/svg/chevron_right", class: "w-4 h-4" %>
+          </span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

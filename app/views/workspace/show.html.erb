@@ -1,0 +1,105 @@
+<div class="space-y-6 mx-auto w-full max-w-5xl px-4 sm:px-6">
+  <% if @workspace.trial? %>
+    <%= render "workspace/trial_banner", workspace: @workspace %>
+  <% end %>
+
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0">
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground"><%= @workspace.name %></h1>
+        <%= plan_badge(@workspace) %>
+      </div>
+      <p class="text-muted-foreground pt-1 text-sm">Workspace details</p>
+    </div>
+    <% if workspace_admin? %>
+      <%= link_to edit_workspace_path(id: @workspace.id), class: "ui-btn-primary ui-btn-md flex-shrink-0" do %>
+        <%= render "shared/svg/edit", class: "w-4 h-4" %>
+        <span>Edit Workspace</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Usage Statistics</h3>
+    <%= render "ui/stat_grid", cols: 3 do %>
+      <%= render "ui/stat", value: @current_month_visits, label: "Visits This Month" %>
+      <%= render "ui/stat", value: @workspace.links.count, label: "Total Links" %>
+      <%= render "ui/stat", value: @workspace.links.where.not(url: nil).count, label: "Active Links" %>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <h3 class="text-lg font-semibold mb-4 text-foreground">Email Digests</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <% [
+        { enabled: @workspace.monthly_digest?, label: "Monthly digest", body: (@workspace.monthly_digest? ? "Enabled" : "Disabled") },
+        { enabled: @workspace.weekly_digest?,
+          label: "Weekly digest",
+          body: ((@workspace.free? && !@workspace.trial?) ? :requires_paid : (@workspace.weekly_digest? ? "Enabled" : "Disabled")) }
+      ].each do |row| %>
+        <div class="flex items-center gap-3">
+          <% if row[:enabled] %>
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-success-100 text-success-600">
+              <%= render "shared/svg/checkmark", class: "w-4 h-4" %>
+            </span>
+          <% else %>
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+              <%= render "shared/svg/close", class: "w-4 h-4" %>
+            </span>
+          <% end %>
+          <div>
+            <span class="text-sm font-medium text-foreground"><%= row[:label] %></span>
+            <p class="text-xs text-muted-foreground">
+              <% if row[:body] == :requires_paid %>
+                Requires <%= link_to "paid plan", pricing_path, class: "ui-btn-link" %>
+              <% else %>
+                <%= row[:body] %>
+              <% end %>
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% unless self_hosted? %>
+    <%= render "ui/card" do %>
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <h3 class="text-lg font-semibold text-foreground">Billing</h3>
+          <p class="text-sm text-muted-foreground mt-1">
+            <% if @workspace.trial? %>
+              Basic trial &middot; ends <%= l(@workspace.trial_ends_at, format: :long) %>
+            <% elsif @workspace.paying? && @workspace.subscription&.active? %>
+              <%= @workspace.plan.titleize %> plan &middot; Next payment <%= @workspace.subscription.current_period_end&.strftime("%b %d, %Y") %>
+            <% elsif @workspace.paying? && @workspace.subscription&.past_due? %>
+              <%= @workspace.plan.titleize %> plan &middot; payment past due
+            <% else %>
+              <%= @workspace.plan.titleize %> plan
+            <% end %>
+          </p>
+        </div>
+        <% if workspace_admin? %>
+          <%= link_to "Manage Billing", workspace_billing_path(@workspace), class: "ui-btn-secondary ui-btn-md flex-shrink-0" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= render "ui/card" do %>
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-foreground">Team Members</h3>
+      <span class="text-sm text-muted-foreground"><%= @workspace.memberships.count %> member<%= @workspace.memberships.count == 1 ? '' : 's' %></span>
+    </div>
+
+    <% if workspace_admin? %>
+      <div class="mb-6 pb-6 border-b border-border">
+        <%= render "workspace/invite_form", workspace: @workspace, invitation: Invitation.new %>
+      </div>
+    <% end %>
+
+    <div id="team_members">
+      <%= render "workspace/team_members", workspace: @workspace %>
+    </div>
+  <% end %>
+</div>

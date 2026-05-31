@@ -1,0 +1,11 @@
+<%= turbo_stream.update "flash" do %>
+  <%= render "shared/flash" %>
+<% end %>
+
+<%= turbo_stream.update "team_members" do %>
+  <%= render "workspace/team_members", workspace: @workspace %>
+<% end %>
+
+<%= turbo_stream.replace "invite_form" do %>
+  <%= render "workspace/invite_form", workspace: @workspace, invitation: Invitation.new %>
+<% end %>

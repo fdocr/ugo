@@ -1,0 +1,36 @@
+<h3 style="margin: 0 0 0.25rem 0; font-size: 1.25rem; color: #0f172a;">Monthly Report</h3>
+<p style="margin: 0 0 1.5rem 0; color: #64748b; font-size: 0.875rem;"><%= @workspace.name %> &mdash; <%= @period %></p>
+
+<p style="margin: 0 0 1rem 0; color: #334155;">Here are the top performing links in your workspace this month:</p>
+
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 1.5rem;">
+  <thead>
+    <tr style="border-bottom: 2px solid #e2e8f0;">
+      <th style="text-align: left; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">#</th>
+      <th style="text-align: left; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Link</th>
+      <th style="text-align: right; padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Visits</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @top_links.each_with_index do |link, index| %>
+      <tr style="border-bottom: 1px solid #f1f5f9;">
+        <td style="padding: 0.625rem 0.75rem; font-size: 0.875rem; color: #94a3b8;"><%= index + 1 %></td>
+        <td style="padding: 0.625rem 0.75rem;">
+          <a href="<%= workspace_link_url(@workspace.id, link.slug) %>" style="color: #255c95; text-decoration: none; font-size: 0.875rem; font-weight: 500;"><%= link.name.present? ? link.name : link.slug %></a>
+        </td>
+        <td style="padding: 0.625rem 0.75rem; text-align: right; font-size: 0.875rem; font-weight: 600; color: #0f172a;"><%= link.visit_count %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div style="text-align: center; margin: 2rem 0 1.5rem 0;">
+  <a href="<%= @workspace_url %>" class="button" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #255c95; color: #fff; text-decoration: none; border-radius: 0.375rem; font-weight: 500; font-size: 0.875rem;">
+    View Workspace Dashboard
+  </a>
+</div>
+
+<p style="margin: 0; color: #94a3b8; font-size: 0.75rem; text-align: center;">
+  You're receiving this because monthly digests are enabled for <strong><%= @workspace.name %></strong>.
+  An admin can disable this in the workspace settings.
+</p>
