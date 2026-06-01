@@ -434,24 +434,6 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal snippet, AppConfig.shared.reload.admin_scripts
   end
 
-  test "site admin can clear honeybadger_api_key with checkbox" do
-    sign_in @site_admin
-    AppConfig.shared.update!(honeybadger_api_key: "stored-key")
-
-    patch admin_settings_path, params: {
-      app_name: "ugo",
-      app_domain: "ugo.cr",
-      smtp_address: "",
-      smtp_port: "587",
-      smtp_username: "",
-      smtp_from_email: "noreply@example.com",
-      clear_honeybadger_api_key: "1"
-    }
-
-    assert_redirected_to admin_settings_path
-    assert_equal "", AppConfig.shared.reload.honeybadger_api_key
-  end
-
   test "main app settings page includes Polar configuration" do
     setup_app_config_as_main_app!
     sign_in @site_admin

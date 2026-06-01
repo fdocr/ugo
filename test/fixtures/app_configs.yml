@@ -14,7 +14,6 @@ one:
   polar_basic_product_id: ""
   polar_growth_product_id: ""
   polar_sandbox: false
-  honeybadger_api_key: ""
   admin_scripts: ""
   deep_link_enabled: false
   deep_link_ios_app_ids: ""

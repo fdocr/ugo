@@ -107,28 +107,4 @@ class AppConfigTest < ActiveSupport::TestCase
   test "polar_product_id returns nil for unknown plan" do
     assert_nil AppConfig.polar_product_id(:enterprise)
   end
-
-  # ------------------------------------------------------------------
-  # Honeybadger configuration
-  # ------------------------------------------------------------------
-  test "honeybadger_key returns DB value when present" do
-    AppConfig.shared.update!(honeybadger_api_key: "db-hb-key")
-    assert_equal "db-hb-key", AppConfig.honeybadger_key
-  end
-
-  test "honeybadger_key falls back to ENV when DB value is blank" do
-    AppConfig.shared.update!(honeybadger_api_key: "")
-    ENV["HONEYBADGER_API_KEY"] = "env-hb-key"
-
-    assert_equal "env-hb-key", AppConfig.honeybadger_key
-  ensure
-    ENV.delete("HONEYBADGER_API_KEY")
-  end
-
-  test "honeybadger_key returns nil when nothing is configured" do
-    AppConfig.shared.update!(honeybadger_api_key: "")
-    ENV.delete("HONEYBADGER_API_KEY")
-
-    assert_nil AppConfig.honeybadger_key
-  end
 end

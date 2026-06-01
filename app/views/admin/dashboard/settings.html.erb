@@ -130,31 +130,6 @@
       </div>
     <% end %>
 
-    <%= render "ui/card" do %>
-      <h3 class="text-lg font-semibold text-foreground">Error Tracking (Honeybadger)</h3>
-      <p class="ui-hint mb-4 mt-1">
-        Optional. Leave the API key blank to keep the current value. Changes take effect after the next deploy or container restart.
-      </p>
-
-      <div class="space-y-4">
-        <div class="space-y-2">
-          <%= form.label :honeybadger_api_key, "API Key", class: "ui-label" %>
-          <%= form.password_field :honeybadger_api_key,
-                placeholder: @config.honeybadger_api_key.present? ? "••••••••  (leave blank to keep current)" : "Enter Honeybadger API key",
-                class: "ui-input",
-                autocomplete: "off" %>
-        </div>
-
-        <label class="flex items-start gap-3 cursor-pointer">
-          <%= check_box_tag :clear_honeybadger_api_key, "1", false, class: "ui-checkbox mt-0.5" %>
-          <div>
-            <span class="text-sm font-medium text-foreground">Remove stored API key</span>
-            <p class="ui-hint">Clears the database value so only the HONEYBADGER_API_KEY environment variable applies (if set).</p>
-          </div>
-        </label>
-      </div>
-    <% end %>
-
     <% if AppConfig.main_app? %>
       <%= render "ui/card" do %>
         <h3 class="text-lg font-semibold text-foreground">Payments (Polar)</h3>

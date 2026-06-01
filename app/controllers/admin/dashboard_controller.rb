@@ -39,7 +39,6 @@ class Admin::DashboardController < AdminController
     attrs.delete(:smtp_password) if params[:smtp_password].blank?
     # Unchecked checkboxes are simply absent from params, so coerce explicitly.
     attrs[:deep_link_enabled] = params[:deep_link_enabled] == "1"
-    assign_clearable_secret(attrs, :honeybadger_api_key)
     assign_polar_settings(attrs) if AppConfig.main_app?
 
     AppConfig.shared.update!(attrs)

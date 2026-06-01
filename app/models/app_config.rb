@@ -8,7 +8,7 @@ class AppConfig < ApplicationRecord
   UGO_DOMAIN = "ugo.cr".freeze
 
   encrypts :smtp_password, :smtp_username, :admin_api_key, :setup_code,
-           :polar_access_token, :polar_webhook_secret, :honeybadger_api_key
+           :polar_access_token, :polar_webhook_secret
 
   # Setup completion + hosting mode are effectively immutable for the lifetime
   # of a process (only ever flipped via setup or admin settings update). Bust
@@ -62,14 +62,6 @@ class AppConfig < ApplicationRecord
     when "growth"
       cfg.polar_growth_product_id.presence || ENV["POLAR_GROWTH_PRODUCT_ID"]
     end
-  end
-
-  # ------------------------------------------------------------------
-  # Honeybadger configuration
-  # ------------------------------------------------------------------
-  def self.honeybadger_key
-    cfg = shared rescue nil
-    cfg&.honeybadger_api_key.presence || ENV["HONEYBADGER_API_KEY"]
   end
 
   # ------------------------------------------------------------------
