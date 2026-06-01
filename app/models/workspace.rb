@@ -138,6 +138,18 @@ class Workspace < ApplicationRecord
     ENV.fetch("UGO_TRIAL_DURATION_DAYS", 14).to_i.clamp(1, 365)
   end
 
+  OPEN_BETA_ACTIVITY_WINDOW = 60.days
+
+  def open_beta_active?
+    return false unless user
+
+    if user.last_login_at.present? && user.last_login_at >= OPEN_BETA_ACTIVITY_WINDOW.ago
+      return true
+    end
+
+    links.joins(:visits).where("visits.timestamp >= ?", OPEN_BETA_ACTIVITY_WINDOW.ago).exists?
+  end
+
   private
 
   def compute_access_blocked
