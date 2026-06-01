@@ -87,6 +87,7 @@ Most configuration is handled through the setup wizard and admin panel. The foll
 | `SOLID_QUEUE_IN_PUMA` | enabled | Set to `false` to disable the Solid Queue Puma plugin (advanced; use `bin/jobs` separately) |
 | `DB_POOL` | _(auto)_ | Optional override for Active Record pool size per process (default: max of `RAILS_MAX_THREADS` and `SOLID_QUEUE_THREADS` + 2) |
 | `RAILS_LOG_LEVEL` | `info` | Log verbosity (`debug`, `info`, `warn`, `error`) |
+| `HONEYBADGER_API_KEY` | _(unset)_ | [Honeybadger](https://www.honeybadger.io/) error-tracking API key; reporting is disabled when unset (see [Error tracking](#error-tracking-honeybadger)) |
 | `TRUSTED_PROXIES_EXTRA` | _(unset)_ | Comma-separated CDN/proxy CIDRs when using Cloudflare orange cloud (see [Cloudflare](#cloudflare-orange-cloud-and-trusted-proxies)) |
 | `CLOUDFLARE_TURNSTILE_SITE_KEY` | _(unset)_ | Cloudflare Turnstile site key for sign-up bot protection (managed ugo.cr) |
 | `CLOUDFLARE_TURNSTILE_SECRET_KEY` | _(unset)_ | Turnstile secret key; sign-up protection disabled when unset |
@@ -114,6 +115,18 @@ Active Record’s `pool` is **per Ruby process**, not shared across the machine.
 
 ```bash
 docker exec <container_id> printenv WEB_CONCURRENCY RAILS_MAX_THREADS JOB_CONCURRENCY SOLID_QUEUE_THREADS
+```
+
+## Error tracking (Honeybadger)
+
+Error tracking via [Honeybadger](https://www.honeybadger.io/) is optional and disabled by default. It is configured **solely** through the `HONEYBADGER_API_KEY` environment variable — there is no admin-panel setting. Errors are only reported in the production environment, and the integration disables itself automatically when the variable is unset.
+
+Add the variable in Once the same way as `TRUSTED_PROXIES_EXTRA`: **`s`** (Settings) → **`v`** (Environment) → add a row with **Key** `HONEYBADGER_API_KEY` and **Value** = your project API key → **Done** (Once redeploys). The new key takes effect once the container restarts.
+
+Verify it is set:
+
+```bash
+docker exec <container_id> printenv HONEYBADGER_API_KEY
 ```
 
 ## Cloudflare (orange cloud) and trusted proxies

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_30_130100) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_31_120000) do
   create_table "app_configs", force: :cascade do |t|
     t.string "admin_api_key", default: "admin-secret-key"
     t.text "admin_scripts", default: "", null: false
@@ -22,7 +22,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_130100) do
     t.string "deep_link_default_destination", default: "", null: false
     t.boolean "deep_link_enabled", default: false, null: false
     t.text "deep_link_ios_app_ids", default: "", null: false
-    t.string "honeybadger_api_key", default: ""
     t.string "polar_access_token", default: ""
     t.string "polar_basic_product_id", default: ""
     t.string "polar_growth_product_id", default: ""

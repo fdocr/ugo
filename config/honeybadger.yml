@@ -1,10 +1,10 @@
 ---
 # For more options, see https://docs.honeybadger.io/lib/ruby/gem-reference/configuration
-# Reads from AppConfig (admin panel) with ENV fallback. Gracefully disables
-# itself when neither is configured.
+# Configured solely via the HONEYBADGER_API_KEY environment variable.
+# Gracefully disables itself when the variable is unset.
 
-api_key: '<%= (AppConfig.honeybadger_key rescue nil) || ENV["HONEYBADGER_API_KEY"] || "NA" %>'
-report_data: <%= ((AppConfig.honeybadger_key rescue nil) || ENV["HONEYBADGER_API_KEY"]).present? && Rails.env.production? %>
+api_key: '<%= ENV["HONEYBADGER_API_KEY"].presence || "NA" %>'
+report_data: <%= ENV["HONEYBADGER_API_KEY"].present? && Rails.env.production? %>
 
 env: "<%= Rails.env %>"
 root: "<%= Rails.root.to_s %>"
