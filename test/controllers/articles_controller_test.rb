@@ -12,7 +12,7 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{sign_up_path}']", text: "hosted account"
     assert_select "a[href='#{pricing_path}']", text: "hosted plans"
     assert_select "a[href='#{pricing_path}']", text: "Hosted plans"
-    assert_select "a[href='https://github.com/fdocr/ugo']", text: "self-hosted"
+    assert_select "a[href='#{self_host_path}']", text: "self-hosted"
     assert_select ".ui-banner-info", count: 0
   end
 
