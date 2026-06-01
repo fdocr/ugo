@@ -9,15 +9,19 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
     get open_beta_article_path
     assert_response :success
     assert_select "h1", text: "Unlimited trial during open beta"
-    assert_select "a[href='#{sign_up_path}']", text: "Get Started Now"
-    assert_select "a[href='#{pricing_path}']", text: "View Hosted Plans"
+    assert_select "a[href='#{sign_up_path}']", text: "hosted account"
+    assert_select "a[href='#{pricing_path}']", text: "hosted plans"
+    assert_select "a[href='#{pricing_path}']", text: "Hosted plans"
+    assert_select "a[href='https://github.com/fdocr/ugo']", text: "self-hosted"
+    assert_select ".ui-banner-info", count: 0
   end
 
-  test "open beta article shows dashboard button for authenticated users" do
+  test "open beta article links hosted account to dashboard for authenticated users" do
     sign_in_as(users(:one))
     get open_beta_article_path
     assert_response :success
-    assert_select "a[href='#{dashboard_path}']", text: "Go to Dashboard"
+    assert_select "a[href='#{dashboard_path}']", text: "hosted account"
+    assert_select "a[href='#{sign_up_path}']", text: "hosted account", count: 0
   end
 
   test "open beta article redirects on self-hosted" do
