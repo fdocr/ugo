@@ -24,8 +24,6 @@ curl https://get.once.com | sh
   - Deploy ugo on your own server with the Once CLI
 - [Deep linking](docs/deep-linking.md)
   - Native app bounce redirects at `/r?r=` (Dedicated and self-hosted)
-- [Codebase analysis (HTML slides)](docs/codebase-analysis-slides-2026-04-11.html)
-  - Technical deep dive and SWOT-style business notes (open in a browser)
 
 ## License
 
