@@ -52,6 +52,8 @@ Rails.application.routes.draw do
   get "dashboard" => "home#dashboard"
   get "dashboard/links" => "home#links", as: :dashboard_links
 
+  get "articles/open_beta", to: "articles#open_beta", as: :open_beta_article
+
   get "sign_up" => "registrations#new"
   post "sign_up" => "registrations#create"
   delete "sign_up" => "registrations#destroy"

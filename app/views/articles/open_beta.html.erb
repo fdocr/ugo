@@ -1,0 +1,51 @@
+<div class="min-h-screen">
+  <div class="container mx-auto px-4 py-16 sm:py-24">
+    <div class="max-w-3xl mx-auto">
+      <%= render "ui/banner",
+            tone: :info,
+            title: "Open beta",
+            body: "ugo is in early development. We are actively refining and evolving. Thanks for trying it out!" %>
+
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-foreground/90 mb-4">
+        Unlimited trial during open beta
+      </h1>
+      <p class="text-lg text-muted-foreground">
+        How hosted accounts work while ugo is in early access.
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-primary-50/30 py-16 sm:py-24">
+    <div class="max-w-2xl mx-auto px-4 space-y-8">
+      <p class="text-base sm:text-lg text-muted-foreground leading-relaxed">
+        ugo is in open beta. We are building in public, shipping improvements often, and learning from early users. During this period we want you to explore hosted ugo without worrying about a trial countdown.
+      </p>
+
+      <p class="text-base sm:text-lg text-muted-foreground leading-relaxed">
+        Every new hosted account starts on a free Basic trial with no credit card required. During open beta your trial does not end on a fixed schedule: if you keep using ugo, we automatically renew your trial so active workspaces stay open. Subscribe anytime if you want paid tier limits, or keep exploring while we are still in beta.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 pt-2">
+        <% if authenticated? %>
+          <%= link_to "Go to Dashboard", dashboard_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% else %>
+          <%= link_to "Get Started Now", sign_up_path, class: "ui-btn-primary ui-btn-lg" %>
+        <% end %>
+      </div>
+
+      <p class="text-base sm:text-lg text-muted-foreground leading-relaxed">
+        Hosted plans run on ugo.cr with zero configuration. Create an account and you can shorten links, tag campaigns with UTM parameters, preview social cards, and review click analytics from day one. Basic and Growth plans scale with your traffic; Dedicated adds your own subdomain and deep linking. You can also run a self-hosted instance on your own infrastructure if you want full control.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 pt-2">
+        <%= link_to "View Hosted Plans", pricing_path, class: "ui-btn-secondary ui-btn-md" %>
+      </div>
+
+      <p class="text-base sm:text-lg text-muted-foreground leading-relaxed">
+        Open beta will not last forever. When we graduate, standard trial length will apply and we will give plenty of notice before anything changes. Until then, try ugo, tell us what works, and help shape what comes next.
+      </p>
+    </div>
+  </div>
+
+  <%= render "shared/footer" %>
+</div>

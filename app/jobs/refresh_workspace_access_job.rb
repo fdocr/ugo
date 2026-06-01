@@ -10,6 +10,8 @@ class RefreshWorkspaceAccessJob < ApplicationJob
   def perform
     return if AppConfig.self_hosted?
 
+    extend_open_beta_trials! if Flipper.enabled?(:open_beta)
+
     # 1) Trials that just ran out: not currently flagged but should be.
     Workspace
       .where(access_blocked_at: nil)
@@ -24,5 +26,22 @@ class RefreshWorkspaceAccessJob < ApplicationJob
       .where.not(access_blocked_at: nil)
       .where.not(plan: :dedicated)
       .find_each(&:recompute_access_blocked!)
+  end
+
+  private
+
+  def extend_open_beta_trials!
+    renewal_horizon = 1.day.from_now
+
+    Workspace
+      .where.not(plan: :dedicated)
+      .where("trial_ends_at IS NOT NULL AND trial_ends_at <= ?", renewal_horizon)
+      .find_each do |workspace|
+        next if workspace.paying?
+        next unless workspace.open_beta_active?
+
+        workspace.update!(trial_ends_at: Workspace.trial_duration_days.days.from_now)
+        workspace.recompute_access_blocked!
+      end
   end
 end
