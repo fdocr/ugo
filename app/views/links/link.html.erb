@@ -10,19 +10,20 @@
   <% cache @link.social_tag do %>
     <!-- Primary Meta Tags -->
     <% if @link.social_tag.present? %>
+      <% short_link_url = "#{request.base_url}#{request.path}" %>
       <meta name="title" content="<%= @link.social_tag.title %>">
       <meta name="description" content="<%= @link.social_tag.description %>">
 
       <!-- Open Graph / Facebook -->
       <meta property="og:type" content="website">
-      <meta property="og:url" content="<%= @link.social_tag.url %>">
+      <meta property="og:url" content="<%= short_link_url %>">
       <meta property="og:title" content="<%= @link.social_tag.title %>">
       <meta property="og:description" content="<%= @link.social_tag.description %>">
       <meta property="og:image" content="<%= @link.social_tag.image_url %>">
 
       <!-- Twitter -->
       <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:url" content="<%= @link.social_tag.url %>">
+      <meta name="twitter:url" content="<%= short_link_url %>">
       <meta name="twitter:title" content="<%= @link.social_tag.title %>">
       <meta name="twitter:description" content="<%= @link.social_tag.description %>">
       <meta name="twitter:image" content="<%= @link.social_tag.image_url %>">

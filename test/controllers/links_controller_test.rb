@@ -132,6 +132,19 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<title>Test Link One</title>"
   end
 
+  test "redirect page og:url points at the short link not the destination" do
+    SocialTag.create!(
+      link: @link,
+      title: "Article",
+      description: "Summary",
+      url: "https://example.com/article",
+      image_url: "https://example.com/image.png"
+    )
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_match %r{property="og:url" content="https?://[^"]*/#{@link.slug}"}, response.body
+    refute_includes response.body, 'property="og:url" content="https://example.com/article"'
+  end
+
   test "redirect page includes noindex robots directive" do
     get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
     assert_includes response.body, '<meta name="robots" content="noindex, nofollow">'
