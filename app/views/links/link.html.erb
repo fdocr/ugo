@@ -7,24 +7,30 @@
   <meta name="robots" content="noindex, nofollow">
   <title><%= @link.social_tag&.title.presence || @link.name %></title>
 
+  <%# Request-dependent tags (host/scheme) must stay OUTSIDE the cache block
+      below: it is keyed only on the social_tag record, so baking request
+      state into it would pin the first-seen host/scheme for every visitor. %>
+  <% if @link.social_tag.present? %>
+    <% short_link_url = "#{request.base_url}#{request.path}" %>
+    <meta property="og:site_name" content="<%= request.host %>">
+    <meta property="og:url" content="<%= short_link_url %>">
+    <meta name="twitter:url" content="<%= short_link_url %>">
+  <% end %>
+
   <% cache @link.social_tag do %>
     <!-- Primary Meta Tags -->
     <% if @link.social_tag.present? %>
-      <% short_link_url = "#{request.base_url}#{request.path}" %>
       <meta name="title" content="<%= @link.social_tag.title %>">
       <meta name="description" content="<%= @link.social_tag.description %>">
 
       <!-- Open Graph / Facebook -->
       <meta property="og:type" content="website">
-      <meta property="og:site_name" content="<%= request.host %>">
-      <meta property="og:url" content="<%= short_link_url %>">
       <meta property="og:title" content="<%= @link.social_tag.title %>">
       <meta property="og:description" content="<%= @link.social_tag.description %>">
       <meta property="og:image" content="<%= @link.social_tag.image_url %>">
 
       <!-- Twitter -->
       <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:url" content="<%= short_link_url %>">
       <meta name="twitter:title" content="<%= @link.social_tag.title %>">
       <meta name="twitter:description" content="<%= @link.social_tag.description %>">
       <meta name="twitter:image" content="<%= @link.social_tag.image_url %>">
