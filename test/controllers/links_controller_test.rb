@@ -120,6 +120,56 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     refute_match(/window\.location\.replace\("https:\/\/example\.com\/path\?a=1&amp;b=2"\)/, response.body)
   end
 
+  test "redirect page title uses social tag title when present" do
+    SocialTag.create!(link: @link, title: "Shared Article", description: "Summary", url: @link.url)
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, "<title>Shared Article</title>"
+  end
+
+  test "redirect page title falls back to link name without social tag" do
+    @link.social_tag&.destroy
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, "<title>Test Link One</title>"
+  end
+
+  test "redirect page includes og:site_name" do
+    SocialTag.create!(link: @link, title: "Article", description: "Summary", url: @link.url)
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, %(property="og:site_name" content="www.example.com")
+  end
+
+  test "redirect page og:url points at the short link not the destination" do
+    SocialTag.create!(
+      link: @link,
+      title: "Article",
+      description: "Summary",
+      url: "https://example.com/article",
+      image_url: "https://example.com/image.png"
+    )
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_match %r{property="og:url" content="https?://[^"]*/#{@link.slug}"}, response.body
+    refute_includes response.body, 'property="og:url" content="https://example.com/article"'
+  end
+
+  test "redirect page includes noindex robots directive" do
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, '<meta name="robots" content="noindex, nofollow">'
+  end
+
+  test "redirect page twitter tags use name attribute" do
+    SocialTag.create!(
+      link: @link,
+      title: "Tweet Title",
+      description: "Tweet body",
+      url: "https://example.com/article",
+      image_url: "https://example.com/image.png"
+    )
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, '<meta name="twitter:card" content="summary_large_image">'
+    assert_includes response.body, '<meta name="twitter:title" content="Tweet Title">'
+    refute_includes response.body, 'property="twitter:title"'
+  end
+
   # Authentication tests
   test "should redirect to login when not authenticated for show" do
     get workspace_link_path(@workspace, @link.slug)

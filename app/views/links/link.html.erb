@@ -4,7 +4,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redirecting...</title>
+  <meta name="robots" content="noindex, nofollow">
+  <title><%= @link.social_tag&.title.presence || @link.name %></title>
+
+  <%# Request-dependent tags (host/scheme) must stay OUTSIDE the cache block
+      below: it is keyed only on the social_tag record, so baking request
+      state into it would pin the first-seen host/scheme for every visitor. %>
+  <% if @link.social_tag.present? %>
+    <% short_link_url = "#{request.base_url}#{request.path}" %>
+    <meta property="og:site_name" content="<%= request.host %>">
+    <meta property="og:url" content="<%= short_link_url %>">
+    <meta name="twitter:url" content="<%= short_link_url %>">
+  <% end %>
 
   <% cache @link.social_tag do %>
     <!-- Primary Meta Tags -->
@@ -14,17 +25,15 @@
 
       <!-- Open Graph / Facebook -->
       <meta property="og:type" content="website">
-      <meta property="og:url" content="<%= @link.social_tag.url %>">
       <meta property="og:title" content="<%= @link.social_tag.title %>">
       <meta property="og:description" content="<%= @link.social_tag.description %>">
       <meta property="og:image" content="<%= @link.social_tag.image_url %>">
 
       <!-- Twitter -->
-      <meta property="twitter:card" content="summary_large_image">
-      <meta property="twitter:url" content="<%= @link.social_tag.url %>">
-      <meta property="twitter:title" content="<%= @link.social_tag.title %>">
-      <meta property="twitter:description" content="<%= @link.social_tag.description %>">
-      <meta property="twitter:image" content="<%= @link.social_tag.image_url %>">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="<%= @link.social_tag.title %>">
+      <meta name="twitter:description" content="<%= @link.social_tag.description %>">
+      <meta name="twitter:image" content="<%= @link.social_tag.image_url %>">
     <% else %>
       <meta name="title" content="<%= @link.name %>">
       <meta name="description" content="">
