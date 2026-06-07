@@ -132,6 +132,12 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<title>Test Link One</title>"
   end
 
+  test "redirect page includes og:site_name" do
+    SocialTag.create!(link: @link, title: "Article", description: "Summary", url: @link.url)
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, %(property="og:site_name" content="www.example.com")
+  end
+
   test "redirect page og:url points at the short link not the destination" do
     SocialTag.create!(
       link: @link,
