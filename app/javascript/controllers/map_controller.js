@@ -5,6 +5,7 @@ const theme = {
   primary: '#5aa9e6',
   primaryLight: '#e8f4fc',
   primaryDark: '#3b82a0',
+  hover: '#2d6a8a',
   text: '#64748b',
   textDark: '#0f172a',
   border: '#e2e8f0',
@@ -20,7 +21,12 @@ export default class extends Controller {
   }
 
   disconnect() {
-    // Clean up DataMaps SVG
+    if (this.resizeHandler) {
+      window.removeEventListener("resize", this.resizeHandler);
+      this.resizeHandler = null;
+    }
+
+    clearTimeout(this.resizeTimeout);
     this.element.innerHTML = '';
     this.map = null;
   }
@@ -44,7 +50,6 @@ export default class extends Controller {
     const maxValue = mapData.max || 1;
     const countryNames = mapData.names || {};
 
-    // Build fills object for DataMaps
     const fills = {
       defaultFill: theme.muted,
       low: theme.primaryLight,
@@ -52,7 +57,6 @@ export default class extends Controller {
       high: theme.primaryDark
     };
 
-    // Build data object with fillKey based on value
     const data = {};
     Object.entries(mapData.data).forEach(([code, value]) => {
       let fillKey;
@@ -64,7 +68,7 @@ export default class extends Controller {
       } else {
         fillKey = 'low';
       }
-      
+
       data[code] = {
         fillKey: fillKey,
         visits: value,
@@ -72,25 +76,29 @@ export default class extends Controller {
       };
     });
 
-    // Create DataMaps instance
     this.map = new Datamap({
       element: this.element,
-      responsive: true,
+      // Fixed-height chart slot (h-64). responsive:true adds a padding-bottom
+      // aspect-ratio hack that fights the slot and breaks tooltip positioning.
+      responsive: false,
       projection: 'mercator',
       fills: fills,
       data: data,
       geographyConfig: {
         borderColor: theme.border,
         borderWidth: 0.5,
-        highlightOnHover: true,
-        highlightFillColor: theme.primary,
-        highlightBorderColor: theme.textDark,
-        highlightBorderWidth: 1,
+        // Hover is fully self-managed in setupHover. DataMaps' built-in hover
+        // re-appends the hovered <path> to the DOM (moveToFront), which races
+        // with mouseout in Chromium and leaves countries stuck highlighted
+        // (see issue #17). Disabling both stops DataMaps from binding any
+        // subunit handlers so no DOM reordering happens.
+        highlightOnHover: false,
+        popupOnHover: false,
         popupTemplate: (geography, data) => {
           const name = data?.name || geography.properties.name;
           const visits = data?.visits || 0;
           const visitText = visits === 1 ? 'visit' : 'visits';
-          
+
           return `
             <div class="hoverinfo" style="
               font-family: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -108,11 +116,97 @@ export default class extends Controller {
         }
       },
       done: (datamap) => {
-        // Handle window resize
-        window.addEventListener('resize', () => {
-          datamap.resize();
-        });
+        this.setupHover(datamap, fills);
+        this.setupResize();
       }
     });
+  }
+
+  // Self-managed hover using mouseenter/mousemove/mouseleave. These fire
+  // reliably per country (unlike DataMaps' mouseover/mouseout, which it breaks
+  // by reordering the DOM on hover). Highlight is applied on enter and always
+  // restored on leave, with an svg-level safety net for fast exits.
+  setupHover(datamap, fills) {
+    const d3 = window.d3;
+    if (!d3) return;
+
+    const element = datamap.options.element;
+    const data = datamap.options.data;
+    const subunits = datamap.svg.selectAll(".datamaps-subunit");
+    const popupTemplate = datamap.options.geographyConfig.popupTemplate;
+
+    let tooltip = d3.select(element).select(".datamaps-hoverover");
+    if (tooltip.empty()) {
+      tooltip = d3.select(element).append("div")
+        .attr("class", "datamaps-hoverover")
+        .style("display", "none")
+        .style("position", "absolute")
+        .style("pointer-events", "none")
+        .style("z-index", "10001");
+    }
+
+    const baseFill = (geography) => {
+      const country = data[geography.id];
+      return country?.fillKey ? fills[country.fillKey] : fills.defaultFill;
+    };
+
+    const restore = function (geography) {
+      d3.select(this)
+        .style("fill", baseFill(geography))
+        .style("stroke", theme.border)
+        .style("stroke-width", "0.5px");
+    };
+
+    subunits
+      .on("mouseenter", function () {
+        d3.select(this)
+          .style("fill", theme.hover)
+          .style("stroke", theme.textDark)
+          .style("stroke-width", "1px");
+      })
+      .on("mousemove", function (geography) {
+        const mouse = d3.mouse(element);
+        tooltip
+          .style("display", "block")
+          .style("left", `${mouse[0]}px`)
+          .style("top", `${mouse[1] + 30}px`)
+          .html(popupTemplate(geography, data[geography.id]));
+      })
+      .on("mouseleave", function (geography) {
+        restore.call(this, geography);
+        tooltip.style("display", "none");
+      });
+
+    // Safety net: if the pointer leaves the map fast enough to skip a
+    // country's mouseleave, clear every highlight and hide the tooltip.
+    datamap.svg.on("mouseleave", () => {
+      subunits.each(function (geography) {
+        restore.call(this, geography);
+      });
+      tooltip.style("display", "none");
+    });
+  }
+
+  // responsive:false fixes the SVG to its pixel size at creation, so a viewport
+  // change won't reflow it. Rebuild (debounced) to refit the slot width.
+  setupResize() {
+    this.resizeHandler = () => {
+      if (!this.map) return;
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = setTimeout(() => this.recreateMap(), 150);
+    };
+    window.addEventListener("resize", this.resizeHandler);
+  }
+
+  recreateMap() {
+    if (this.resizeHandler) {
+      window.removeEventListener("resize", this.resizeHandler);
+      this.resizeHandler = null;
+    }
+
+    clearTimeout(this.resizeTimeout);
+    this.element.innerHTML = '';
+    this.map = null;
+    this.createMap();
   }
 }
