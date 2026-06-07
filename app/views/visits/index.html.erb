@@ -42,10 +42,10 @@
 
       <!-- Geographic Map Chart -->
       <div class="space-y-2">
-        <div class="relative h-64 w-full">
+        <div class="relative h-64 w-full overflow-visible">
           <div data-controller="map"
                data-map-data-value="<%= @chart_data[:map].to_json %>"
-               class="w-full h-full"></div>
+               class="absolute inset-0"></div>
         </div>
       </div>
 
