@@ -132,6 +132,11 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<title>Test Link One</title>"
   end
 
+  test "redirect page includes noindex robots directive" do
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, '<meta name="robots" content="noindex, nofollow">'
+  end
+
   test "redirect page twitter tags use name attribute" do
     SocialTag.create!(
       link: @link,
