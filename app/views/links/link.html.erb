@@ -20,11 +20,11 @@
       <meta property="og:image" content="<%= @link.social_tag.image_url %>">
 
       <!-- Twitter -->
-      <meta property="twitter:card" content="summary_large_image">
-      <meta property="twitter:url" content="<%= @link.social_tag.url %>">
-      <meta property="twitter:title" content="<%= @link.social_tag.title %>">
-      <meta property="twitter:description" content="<%= @link.social_tag.description %>">
-      <meta property="twitter:image" content="<%= @link.social_tag.image_url %>">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:url" content="<%= @link.social_tag.url %>">
+      <meta name="twitter:title" content="<%= @link.social_tag.title %>">
+      <meta name="twitter:description" content="<%= @link.social_tag.description %>">
+      <meta name="twitter:image" content="<%= @link.social_tag.image_url %>">
     <% else %>
       <meta name="title" content="<%= @link.name %>">
       <meta name="description" content="">

@@ -132,6 +132,20 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<title>Test Link One</title>"
   end
 
+  test "redirect page twitter tags use name attribute" do
+    SocialTag.create!(
+      link: @link,
+      title: "Tweet Title",
+      description: "Tweet body",
+      url: "https://example.com/article",
+      image_url: "https://example.com/image.png"
+    )
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, '<meta name="twitter:card" content="summary_large_image">'
+    assert_includes response.body, '<meta name="twitter:title" content="Tweet Title">'
+    refute_includes response.body, 'property="twitter:title"'
+  end
+
   # Authentication tests
   test "should redirect to login when not authenticated for show" do
     get workspace_link_path(@workspace, @link.slug)
