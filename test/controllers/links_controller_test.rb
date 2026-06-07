@@ -120,6 +120,18 @@ class LinksControllerTest < ActionDispatch::IntegrationTest
     refute_match(/window\.location\.replace\("https:\/\/example\.com\/path\?a=1&amp;b=2"\)/, response.body)
   end
 
+  test "redirect page title uses social tag title when present" do
+    SocialTag.create!(link: @link, title: "Shared Article", description: "Summary", url: @link.url)
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, "<title>Shared Article</title>"
+  end
+
+  test "redirect page title falls back to link name without social tag" do
+    @link.social_tag&.destroy
+    get link_redirect_path(@link.slug), headers: { "User-Agent" => "TestBrowser/1.0" }
+    assert_includes response.body, "<title>Test Link One</title>"
+  end
+
   # Authentication tests
   test "should redirect to login when not authenticated for show" do
     get workspace_link_path(@workspace, @link.slug)
