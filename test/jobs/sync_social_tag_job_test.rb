@@ -142,6 +142,24 @@ class SyncSocialTagJobTest < ActiveJob::TestCase
     assert_equal "https://cdn.example.com/banner.png", @link.reload.social_tag.image_url
   end
 
+  test "falls back to the document title when OG and Twitter titles are absent" do
+    body = "<html><head><title>Page Title</title></head><body></body></html>"
+    run_job_with_stubs do |stubs|
+      stubs.get(@link.url) { [ 200, { "Content-Type" => "text/html" }, body ] }
+    end
+
+    assert_equal "Page Title", @link.reload.social_tag.title
+  end
+
+  test "falls back to meta description when OG and Twitter descriptions are absent" do
+    body = '<html><head><meta name="description" content="Meta summary"></head><body></body></html>'
+    run_job_with_stubs do |stubs|
+      stubs.get(@link.url) { [ 200, { "Content-Type" => "text/html" }, body ] }
+    end
+
+    assert_equal "Meta summary", @link.reload.social_tag.description
+  end
+
   test "is a no-op when the link has been deleted between enqueue and perform" do
     assert_nothing_raised do
       SyncSocialTagJob.perform_now(slug: "does-not-exist")

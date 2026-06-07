@@ -42,6 +42,7 @@ class SyncSocialTagJob < ApplicationJob
 
     title = doc.at_css('meta[property="og:title"]')&.[]("content")
     title = doc.at_css('meta[name="twitter:title"]')&.[]("content") if title.blank?
+    title = doc.at_css("title")&.text&.strip if title.blank?
     social_tag.title = title unless title.blank?
 
     url = doc.at_css('meta[property="og:url"]')&.[]("content")
@@ -54,6 +55,7 @@ class SyncSocialTagJob < ApplicationJob
 
     description = doc.at_css('meta[property="og:description"]')&.[]("content")
     description = doc.at_css('meta[name="twitter:description"]')&.[]("content") if description.blank?
+    description = doc.at_css('meta[name="description"]')&.[]("content") if description.blank?
     social_tag.description = description unless description.blank?
 
     social_tag.save if social_tag.changed?
