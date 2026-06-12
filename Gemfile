@@ -33,7 +33,7 @@ gem "faraday-follow_redirects", "~> 0.5"
 gem "rqrcode", "~> 3.1"
 gem "pagy", "~> 43.5"
 gem "dotenv-rails", "~> 3.1"
-gem "honeybadger", "~> 6.6"
+gem "honeybadger", "~> 6.9"
 gem "flipper", "~> 1.4"
 gem "flipper-active_record", "~> 1.3"
 
