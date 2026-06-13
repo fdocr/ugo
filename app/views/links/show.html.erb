@@ -162,8 +162,8 @@
                data-qr-share-link-name-value="<%= @link.name %>">
             <label class="ui-label">QR Code</label>
             <% if @link.qr_code.present? %>
-              <div class="relative border border-border rounded-lg overflow-hidden bg-white p-4 flex items-center justify-center group">
-                <div data-qr-share-target="qrCode" class="w-full max-w-[240px] [&>svg]:w-full [&>svg]:h-auto">
+              <div class="relative border border-border rounded-lg bg-white p-4 flex items-center justify-center group w-full">
+                <div data-qr-share-target="qrCode" class="w-full aspect-square flex items-center justify-center [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-auto [&>svg]:h-auto">
                   <%= @link.qr_code.html_safe %>
                 </div>
 
