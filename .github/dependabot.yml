@@ -1,12 +1,35 @@
 version: 2
+
+multi-ecosystem-groups:
+  routine-updates:
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "07:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 1
+    labels:
+      - dependencies
+
 updates:
-- package-ecosystem: bundler
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-- package-ecosystem: github-actions
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
+  - package-ecosystem: bundler
+    directory: "/"
+    patterns: ["*"]
+    multi-ecosystem-group: routine-updates
+    cooldown:
+      default-days: 3
+    groups:
+      all-gems:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    patterns: ["*"]
+    multi-ecosystem-group: routine-updates
+    groups:
+      all-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"

@@ -11,7 +11,7 @@ class TrustedProxiesRakeTest < ActiveSupport::TestCase
     Rake::Task.define_task(:environment)
     @task = @rake["trusted_proxies:cloudflare"]
     @task.reenable
-    @path = Rails.root.join("tmp/test-cloudflare-cidrs-rake.txt")
+    @path = Rails.root.join("tmp/test-cloudflare-cidrs-rake-#{SecureRandom.hex(8)}.txt")
     @original_path = TrustedProxies::BAKED_CIDRS_PATH
     TrustedProxies.send(:remove_const, :BAKED_CIDRS_PATH)
     TrustedProxies.const_set(:BAKED_CIDRS_PATH, @path)
@@ -20,7 +20,7 @@ class TrustedProxiesRakeTest < ActiveSupport::TestCase
   teardown do
     TrustedProxies.send(:remove_const, :BAKED_CIDRS_PATH)
     TrustedProxies.const_set(:BAKED_CIDRS_PATH, @original_path)
-    @path.delete if @path.exist?
+    FileUtils.rm_f(@path)
     @task.reenable
   end
 

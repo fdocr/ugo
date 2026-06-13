@@ -1,4 +1,4 @@
-source "https://rubygems.org"
+source "https://rubygems.org", cooldown: 3
 
 gem "rails", "~> 8.1"
 gem "propshaft"
