@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
 namespace :trusted_proxies do
-  desc "Fetch Cloudflare IP ranges and print TRUSTED_PROXIES_EXTRA for Once Environment settings"
+  desc "Fetch Cloudflare IP ranges and update config/cloudflare_cidrs.txt"
   task cloudflare: :environment do
     cidrs = TrustedProxies::Cloudflare.fetch_cidrs
-    value = cidrs.join(",")
+    TrustedProxies.write_baked_cidrs!(cidrs)
 
     puts <<~MSG
-      Paste this value into Once → Settings (s) → Environment (v):
+      Wrote #{cidrs.size} CIDRs to #{TrustedProxies.baked_cidrs_path}
 
-        Key:   TRUSTED_PROXIES_EXTRA
-        Value: (the line below)
-
-      TRUSTED_PROXIES_EXTRA=#{value}
-
-      #{cidrs.size} CIDRs (#{value.length} characters). Press Done in Once to redeploy.
+      Release builds refresh this file automatically before docker build.
+      Commit the updated file when refreshing locally so the offline fallback stays current.
     MSG
   rescue StandardError => e
     warn "Could not fetch Cloudflare IP ranges: #{e.message}"
-    warn "Download manually and join with commas:"
-    warn "  #{TrustedProxies::Cloudflare::IPV4_URL}"
-    warn "  #{TrustedProxies::Cloudflare::IPV6_URL}"
-    exit 1
+    if TrustedProxies.baked_cidrs_path.exist?
+      warn "Using existing #{TrustedProxies.baked_cidrs_path} (#{TrustedProxies.baked_ipaddrs.size} CIDRs)"
+    else
+      warn "Download manually from:"
+      warn "  #{TrustedProxies::Cloudflare::IPV4_URL}"
+      warn "  #{TrustedProxies::Cloudflare::IPV6_URL}"
+      exit 1
+    end
   end
 end

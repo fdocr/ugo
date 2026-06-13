@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# Prefer Cloudflare's CF-Connecting-IP for request.remote_ip when the operator
-# has declared a Cloudflare orange-cloud deployment (TRUSTED_PROXIES_EXTRA) or
-# when a trusted Cloudflare edge IP appears in the proxy chain. Falls back to
-# ActionDispatch::RemoteIp when the header is absent or cannot be trusted.
+# Prefer Cloudflare's CF-Connecting-IP for request.remote_ip when a Cloudflare
+# edge IP appears in the proxy chain (from config/cloudflare_cidrs.txt baked into
+# the image) or when CLOUDFLARE_PROXIED=true. Falls back to ActionDispatch::RemoteIp
+# when the header is absent or cannot be trusted.
 module CloudflareConnectingIp
   HEADER = "HTTP_CF_CONNECTING_IP"
 
@@ -33,7 +33,7 @@ module CloudflareConnectingIp
     end
 
     def trust_connecting_ip_header?(env)
-      return true if TrustedProxies.cloudflare_proxies_configured?
+      return true if TrustedProxies.cloudflare_proxy_mode?
 
       TrustedProxies.cloudflare_ipaddr?(env["REMOTE_ADDR"]) ||
         forwarded_ips(env).any? { |ip| TrustedProxies.cloudflare_ipaddr?(ip) }
