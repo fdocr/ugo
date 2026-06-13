@@ -16,6 +16,10 @@ on:
 jobs:
   build-from-tag:
     if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+      actions: write
     uses: ./.github/workflows/docker-release.yml
     with:
       tag: ${{ github.ref_name }}
@@ -57,6 +61,10 @@ jobs:
     if: >
       github.event_name == 'workflow_run' &&
       needs.resolve-geolite-trigger.outputs.should_build == 'true'
+    permissions:
+      contents: read
+      packages: write
+      actions: write
     uses: ./.github/workflows/docker-release.yml
     with:
       tag: ${{ needs.resolve-geolite-trigger.outputs.tag }}
