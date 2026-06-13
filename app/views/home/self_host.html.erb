@@ -151,7 +151,7 @@
         <div>
           <h3 class="text-xl font-semibold text-foreground mb-4">Environment variables</h3>
           <p class="text-sm text-muted-foreground mb-4">
-            Most configuration is handled through the setup wizard and admin panel. For Cloudflare (orange cloud), set <code class="text-xs">TRUSTED_PROXIES_EXTRA</code> in Once → Settings (<kbd>s</kbd>) → Environment (<kbd>v</kbd>). See <code class="text-xs">docs/self-hosting.md</code> in the repo for the step-by-step walkthrough.
+            Most configuration is handled through the setup wizard and admin panel. Cloudflare orange-cloud proxy CIDRs are baked into each release image automatically. No long environment variable required. See <code class="text-xs">docs/self-hosting.md</code> for firewall and verification steps.
           </p>
           <%= render "ui/card" do %>
             <%= render "ui/table", headers: [ "Variable", "Default", "Description" ] do %>
@@ -166,7 +166,8 @@
                 [ "SOLID_QUEUE_THREADS", "3", "Solid Queue threads per worker" ],
                 [ "DB_POOL", "auto", "Optional; defaults to max of thread env vars" ],
                 [ "RAILS_LOG_LEVEL", "info", "Log verbosity" ],
-                [ "TRUSTED_PROXIES_EXTRA", "Unset", "CDN CIDRs when behind Cloudflare; run bin/rails trusted_proxies:cloudflare" ]
+                [ "CLOUDFLARE_PROXIED", "Unset", "Optional; trust CF-Connecting-IP without a Cloudflare edge in the proxy chain" ],
+                [ "TRUSTED_PROXIES_EXTRA", "Unset", "Optional extra proxy CIDRs beyond the baked Cloudflare list" ]
               ].each do |var, default_val, desc| %>
                 <tr class="border-b border-border last:border-0 hover:bg-accent/50">
                   <td class="py-3 px-2 font-mono text-xs text-foreground"><%= var %></td>

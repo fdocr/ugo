@@ -88,13 +88,14 @@ Most configuration is handled through the setup wizard and admin panel. The foll
 | `DB_POOL` | _(auto)_ | Optional override for Active Record pool size per process (default: max of `RAILS_MAX_THREADS` and `SOLID_QUEUE_THREADS` + 2) |
 | `RAILS_LOG_LEVEL` | `info` | Log verbosity (`debug`, `info`, `warn`, `error`) |
 | `HONEYBADGER_API_KEY` | _(unset)_ | [Honeybadger](https://www.honeybadger.io/) error-tracking API key; reporting is disabled when unset (see [Error tracking](#error-tracking-honeybadger)) |
-| `TRUSTED_PROXIES_EXTRA` | _(unset)_ | Comma-separated CDN/proxy CIDRs when using Cloudflare orange cloud (see [Cloudflare](#cloudflare-orange-cloud-and-trusted-proxies)) |
+| `TRUSTED_PROXIES_EXTRA` | _(unset)_ | Optional extra proxy CIDRs beyond the baked Cloudflare list (advanced) |
+| `CLOUDFLARE_PROXIED` | _(unset)_ | Set to `true` only if `CF-Connecting-IP` should be trusted without a Cloudflare edge IP in the proxy chain (rare) |
 | `CLOUDFLARE_TURNSTILE_SITE_KEY` | _(unset)_ | Cloudflare Turnstile site key for sign-up bot protection (managed ugo.cr) |
 | `CLOUDFLARE_TURNSTILE_SECRET_KEY` | _(unset)_ | Turnstile secret key; sign-up protection disabled when unset |
 
 ## Concurrency (Once Environment)
 
-Set these in Once the same way as `TRUSTED_PROXIES_EXTRA`: **`s`** → **`v`** (Environment) → add keys → **Done** (Once redeploys).
+Set these in Once: **`s`** → **`v`** (Environment) → add keys → **Done** (Once redeploys).
 
 **Defaults** suit a small VPS (1 Puma process, 3 threads, 1 Solid Queue worker). On a larger machine (e.g. 4 CPU / 8 GB), you might use:
 
@@ -121,7 +122,7 @@ docker exec <container_id> printenv WEB_CONCURRENCY RAILS_MAX_THREADS JOB_CONCUR
 
 Error tracking via [Honeybadger](https://www.honeybadger.io/) is optional and disabled by default. It is configured **solely** through the `HONEYBADGER_API_KEY` environment variable — there is no admin-panel setting. Errors are only reported in the production environment, and the integration disables itself automatically when the variable is unset.
 
-Add the variable in Once the same way as `TRUSTED_PROXIES_EXTRA`: **`s`** (Settings) → **`v`** (Environment) → add a row with **Key** `HONEYBADGER_API_KEY` and **Value** = your project API key → **Done** (Once redeploys). The new key takes effect once the container restarts.
+Add the variable in Once: **`s`** (Settings) → **`v`** (Environment) → add a row with **Key** `HONEYBADGER_API_KEY` and **Value** = your project API key → **Done** (Once redeploys). The new key takes effect once the container restarts.
 
 Verify it is set:
 
@@ -133,59 +134,28 @@ docker exec <container_id> printenv HONEYBADGER_API_KEY
 
 Skip this section if DNS points **directly** at your server without a proxied CDN (grey cloud / no Cloudflare proxy).
 
-When traffic flows **Browser → Cloudflare → Once → ugo**, set `TRUSTED_PROXIES_EXTRA` so visit analytics, session IPs, and rate limits use real client addresses. Also restrict your origin firewall to [Cloudflare IP ranges](https://www.cloudflare.com/ips-v4) so headers cannot be spoofed by bypassing Cloudflare.
+When traffic flows **Browser → Cloudflare → Once → ugo**, the Docker image already includes current Cloudflare proxy CIDRs in `config/cloudflare_cidrs.txt`. Release builds (manual tags and GeoLite2 rebuilds) refresh that file from Cloudflare before the image is built. No long environment variable is required.
 
 **Cloudflare SSL/TLS mode** must be **Full (strict)** when using the orange cloud ([Once README](https://github.com/basecamp/once#using-once-to-install-and-configure-applications)).
 
-### Step 1 — Generate the CIDR value
+### Firewall the origin (recommended)
 
-SSH into your server:
+Restrict HTTP/HTTPS to [Cloudflare IP ranges](https://www.cloudflare.com/ips-v4) so `CF-Connecting-IP` and `X-Forwarded-For` cannot be spoofed by bypassing Cloudflare.
 
-```bash
-docker ps
-docker exec -it <container_id> bin/rails trusted_proxies:cloudflare
-```
-
-Copy the comma-separated value from the `TRUSTED_PROXIES_EXTRA=` line.
-
-If the command fails (no outbound network), open [ips-v4](https://www.cloudflare.com/ips-v4) and [ips-v6](https://www.cloudflare.com/ips-v6), copy every line, and join them with commas.
-
-### Step 2 — Add the variable in Once
-
-On the server:
-
-```bash
-once
-```
-
-1. Select your **ugo** application.
-2. Press **`s`** (Settings).
-3. Press **`v`** (Environment).
-4. In the empty row at the bottom: **Key** `TRUSTED_PROXIES_EXTRA`, **Value** = paste the CIDR line (no quotes).
-5. Select **Done** and press **Enter**.
-
-Once redeploys the container automatically. Wait until the dashboard shows the app running.
-
-### Step 3 — Verify
-
-```bash
-docker exec <container_id> printenv TRUSTED_PROXIES_EXTRA
-```
-
-The output should match what you pasted.
-
-### Step 4 — Verify analytics
+### Verify analytics
 
 Open a short link from a normal browser and confirm geography in analytics looks reasonable (not every visit from the same Cloudflare datacenter).
 
-### Step 5 — Firewall the origin (recommended)
+Optional: set `DEBUG_CLIENT_IP=true` in Once Environment temporarily and inspect logs for a `[client_ip]` line showing `source=cf_connecting_ip`.
 
-Allow HTTP/HTTPS only from Cloudflare IPs (plus SSH for administration). How you do this depends on your host (e.g. `ufw`, cloud security groups).
+### Advanced environment variables
 
-### Updating or removing
+| Variable | When to set |
+|---|---|
+| `CLOUDFLARE_PROXIED=true` | Only if analytics IPs are still wrong and logs show Cloudflare headers without a Cloudflare edge IP in the proxy chain |
+| `TRUSTED_PROXIES_EXTRA` | Additional proxy CIDRs beyond Cloudflare (comma-separated) |
 
-- **Cloudflare changes IPs:** re-run `bin/rails trusted_proxies:cloudflare`, update the Environment value, Done.
-- **Remove CDN:** delete the `TRUSTED_PROXIES_EXTRA` row in Environment, Done.
+To refresh the committed fallback file locally: `bin/rails trusted_proxies:cloudflare`
 
 ### CDN cache notes
 
