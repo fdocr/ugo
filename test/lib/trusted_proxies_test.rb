@@ -17,7 +17,7 @@ class TrustedProxiesTest < ActiveSupport::TestCase
     original = ENV["TRUSTED_PROXIES_EXTRA"]
     ENV["TRUSTED_PROXIES_EXTRA"] = "173.245.48.0/20"
 
-  begin
+    begin
       TrustedProxies.configure!
       proxies = Rails.application.config.action_dispatch.trusted_proxies
       assert_operator proxies.size, :>, ActionDispatch::RemoteIp::TRUSTED_PROXIES.size
@@ -25,6 +25,32 @@ class TrustedProxiesTest < ActiveSupport::TestCase
     ensure
       ENV["TRUSTED_PROXIES_EXTRA"] = original
       TrustedProxies.configure!
+    end
+  end
+
+  test "cloudflare_proxies_configured? reflects TRUSTED_PROXIES_EXTRA" do
+    original = ENV["TRUSTED_PROXIES_EXTRA"]
+
+    begin
+      ENV.delete("TRUSTED_PROXIES_EXTRA")
+      assert_not TrustedProxies.cloudflare_proxies_configured?
+
+      ENV["TRUSTED_PROXIES_EXTRA"] = "173.245.48.0/20"
+      assert TrustedProxies.cloudflare_proxies_configured?
+    ensure
+      ENV["TRUSTED_PROXIES_EXTRA"] = original
+    end
+  end
+
+  test "cloudflare_ipaddr? matches configured CIDRs" do
+    original = ENV["TRUSTED_PROXIES_EXTRA"]
+    ENV["TRUSTED_PROXIES_EXTRA"] = "173.245.48.0/20"
+
+    begin
+      assert TrustedProxies.cloudflare_ipaddr?("173.245.48.1")
+      assert_not TrustedProxies.cloudflare_ipaddr?("203.0.113.1")
+    ensure
+      ENV["TRUSTED_PROXIES_EXTRA"] = original
     end
   end
 

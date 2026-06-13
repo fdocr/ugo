@@ -18,4 +18,17 @@ module TrustedProxies
     app.config.action_dispatch.trusted_proxies =
       ActionDispatch::RemoteIp::TRUSTED_PROXIES.dup + extra_ipaddrs
   end
+
+  def cloudflare_proxies_configured?
+    extra_ipaddrs.any?
+  end
+
+  def cloudflare_ipaddr?(ip)
+    return false if ip.blank?
+
+    address = IPAddr.new(ip)
+    extra_ipaddrs.any? { |proxy| proxy.include?(address) }
+  rescue IPAddr::InvalidAddressError
+    false
+  end
 end
