@@ -1,125 +1,63 @@
 name: Release
 
+# Manual code releases: push a v* tag (from your machine or GitHub Releases).
+# GeoLite2 DB refreshes: Update GeoLite2 DB workflow creates a tag, uploads a
+# trigger artifact, and this workflow's workflow_run handler builds the image.
+# (GITHUB_TOKEN tag pushes do not fire push workflows, so workflow_run is used.)
+
 on:
   push:
     tags:
       - "v*"
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  workflow_run:
+    workflows: ["Update GeoLite2 DB"]
+    types: [completed]
 
 jobs:
-  build-and-push:
+  build-from-tag:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/docker-release.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit
+
+  resolve-geolite-trigger:
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
-      packages: write
-      actions: write
-
+    outputs:
+      should_build: ${{ steps.download.outputs.should_build }}
+      tag: ${{ steps.download.outputs.tag }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Determine GeoLite2 cache key
-        id: geo
+      - name: Download geolite release trigger
+        id: download
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Look for a geolite2-last-modified marker in tag annotations,
-          # starting from the current tag and walking backwards.
-          GEO_DATE=""
-          for tag in $(git tag -l 'v*' --sort=-v:refname); do
-            MSG=$(git tag -l "$tag" --format='%(contents)')
-            DATE=$(echo "$MSG" | grep 'geolite2-last-modified:' | sed 's/.*geolite2-last-modified: //')
-            if [ -n "$DATE" ]; then
-              GEO_DATE="$DATE"
-              echo "Found GeoLite2 date from tag $tag: $GEO_DATE"
-              break
-            fi
-          done
-
-          if [ -n "$GEO_DATE" ]; then
-            HASH=$(echo -n "$GEO_DATE" | sha256sum | cut -d' ' -f1 | head -c 16)
-            echo "cache_key=geolite2-${HASH}" >> "$GITHUB_OUTPUT"
-            echo "has_date=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::No GeoLite2 date found in any tag annotation"
-            echo "cache_key=geolite2-none" >> "$GITHUB_OUTPUT"
-            echo "has_date=false" >> "$GITHUB_OUTPUT"
+          if ! gh run download "${{ github.event.workflow_run.id }}" \
+            --repo "${{ github.repository }}" \
+            -n geolite-release-trigger \
+            -D trigger 2>/dev/null; then
+            echo "No geolite release trigger — GeoLite2 database was already up to date"
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Restore GeoLite2 from cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: GeoLite2-City.mmdb
-          key: ${{ steps.geo.outputs.cache_key }}
-          restore-keys: geolite2-
+          TAG=$(python3 -c "import json; print(json.load(open('trigger/geolite-release-trigger.json'))['tag'])")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+          echo "GeoLite2 update detected — will build Docker image for $TAG"
 
-      - name: Download GeoLite2 if not cached
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          echo "Cache miss — downloading from MaxMind..."
-          curl -sS -f -L -o /tmp/geolite2-city.tar.gz \
-            -u "${{ secrets.MAXMIND_ACCOUNT_ID }}:${{ secrets.MAXMIND_LICENSE_KEY }}" \
-            'https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz' && \
-          tar -xzf /tmp/geolite2-city.tar.gz -C /tmp && \
-          find /tmp -name 'GeoLite2-City.mmdb' -exec mv {} ./GeoLite2-City.mmdb \; && \
-          rm -rf /tmp/geolite2-city.tar.gz /tmp/GeoLite2-City_*
-
-          if [ -f ./GeoLite2-City.mmdb ]; then
-            echo "GeoLite2-City.mmdb downloaded successfully"
-          else
-            echo "::warning::Download failed. Checking if a stale cache was restored via restore-keys..."
-          fi
-
-      - name: Verify GeoLite2 database
-        run: |
-          if [ -f ./GeoLite2-City.mmdb ]; then
-            SIZE=$(stat -c%s ./GeoLite2-City.mmdb 2>/dev/null || stat -f%z ./GeoLite2-City.mmdb)
-            echo "GeoLite2-City.mmdb present ($(( SIZE / 1024 / 1024 )) MB)"
-          else
-            echo "::warning::GeoLite2-City.mmdb not available — image will ship without geo IP data"
-          fi
-
-      - name: Save GeoLite2 to cache
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: GeoLite2-City.mmdb
-          key: ${{ steps.geo.outputs.cache_key }}
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels)
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            service=ugo
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  build-from-geolite:
+    needs: resolve-geolite-trigger
+    if: >
+      github.event_name == 'workflow_run' &&
+      needs.resolve-geolite-trigger.outputs.should_build == 'true'
+    uses: ./.github/workflows/docker-release.yml
+    with:
+      tag: ${{ needs.resolve-geolite-trigger.outputs.tag }}
+    secrets: inherit
