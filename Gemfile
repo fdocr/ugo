@@ -75,3 +75,5 @@ group :development, :test do
 end
 
 gem "polar_sh", "~> 0.2.0"
+
+gem "sitemap_generator", "~> 7.0"

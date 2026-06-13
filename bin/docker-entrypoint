@@ -35,6 +35,7 @@ fi
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:create 2>/dev/null || true
   ./bin/rails db:migrate
+  ./bin/rails sitemap:create
 fi
 
 exec "${@}"
