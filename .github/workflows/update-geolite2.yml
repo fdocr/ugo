@@ -5,6 +5,8 @@ name: Update GeoLite2 DB
 # a trigger artifact. The Release workflow picks that up via workflow_run and
 # rebuilds/pushes the GHCR image with a fresh GeoLite2-City.mmdb baked in.
 #
+# GeoLite2 downloads are cached on the default branch (this workflow's ref) so tag
+# release builds can restore them. Tag-scoped caches are not shared across tags.
 # GeoLite2-only tags are NOT code releases. Code releases are tagged manually
 # (e.g. v0.2.0). Automated tags are identifiable by their annotation containing
 # "geolite2-last-modified:" in the tag message body.
@@ -23,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v6
@@ -87,6 +90,43 @@ jobs:
           fi
           echo "next_tag=$NEXT_TAG" >> "$GITHUB_OUTPUT"
           echo "Will create tag: $NEXT_TAG"
+
+      - name: Determine GeoLite2 cache key
+        if: steps.check.outputs.needs_update == 'true'
+        id: geo-cache
+        env:
+          REMOTE_DATE: ${{ steps.check.outputs.remote_date }}
+        run: |
+          CACHE_KEY=$(bash .github/scripts/geolite2-cache-key.sh "$REMOTE_DATE")
+          echo "cache_key=$CACHE_KEY" >> "$GITHUB_OUTPUT"
+          echo "GeoLite2 cache key: $CACHE_KEY"
+
+      - name: Restore GeoLite2 from cache
+        if: steps.check.outputs.needs_update == 'true'
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: GeoLite2-City.mmdb
+          key: ${{ steps.geo-cache.outputs.cache_key }}
+          restore-keys: geolite2-
+
+      - name: Download GeoLite2 if not cached
+        if: steps.check.outputs.needs_update == 'true' && steps.cache-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss — downloading from MaxMind..."
+          curl -sS -f -L -o /tmp/geolite2-city.tar.gz \
+            -u "${{ secrets.MAXMIND_ACCOUNT_ID }}:${{ secrets.MAXMIND_LICENSE_KEY }}" \
+            'https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz' && \
+          tar -xzf /tmp/geolite2-city.tar.gz -C /tmp && \
+          find /tmp -name 'GeoLite2-City.mmdb' -exec mv {} ./GeoLite2-City.mmdb \; && \
+          rm -rf /tmp/geolite2-city.tar.gz /tmp/GeoLite2-City_*
+
+      - name: Save GeoLite2 to cache
+        if: steps.check.outputs.needs_update == 'true' && steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: GeoLite2-City.mmdb
+          key: ${{ steps.geo-cache.outputs.cache_key }}
 
       - name: Create release tag
         if: steps.check.outputs.needs_update == 'true'

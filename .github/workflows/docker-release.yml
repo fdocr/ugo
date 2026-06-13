@@ -53,8 +53,8 @@ jobs:
           done
 
           if [ -n "$GEO_DATE" ]; then
-            HASH=$(echo -n "$GEO_DATE" | sha256sum | cut -d' ' -f1 | head -c 16)
-            echo "cache_key=geolite2-${HASH}" >> "$GITHUB_OUTPUT"
+            CACHE_KEY=$(bash .github/scripts/geolite2-cache-key.sh "$GEO_DATE")
+            echo "cache_key=$CACHE_KEY" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::No GeoLite2 date found for $BUILD_TAG"
             echo "cache_key=geolite2-none" >> "$GITHUB_OUTPUT"
@@ -67,6 +67,8 @@ jobs:
           path: GeoLite2-City.mmdb
           key: ${{ steps.geo.outputs.cache_key }}
           restore-keys: geolite2-
+        # Restores from this tag, then falls back to the default-branch cache
+        # populated by Update GeoLite2 DB. Tag-scoped caches are not shared.
 
       - name: Download GeoLite2 if not cached
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -100,6 +102,8 @@ jobs:
         with:
           path: GeoLite2-City.mmdb
           key: ${{ steps.geo.outputs.cache_key }}
+        # Saves to the current tag ref only (same-tag rebuilds). Cross-tag reuse
+        # depends on the default-branch cache from Update GeoLite2 DB.
 
       - name: Update Cloudflare trusted proxy CIDRs
         run: |
