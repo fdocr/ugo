@@ -10,16 +10,14 @@ SitemapGenerator::Sitemap.default_host = "https://#{config.app_domain}"
 SitemapGenerator::Sitemap.compress = true
 
 SitemapGenerator::Sitemap.create do
-  if AppConfig.main_app?
-    add about_path, changefreq: "monthly", priority: 0.6
-    add privacy_path, changefreq: "monthly", priority: 0.4
-    add pricing_path, changefreq: "weekly", priority: 0.8
-    add self_host_path, changefreq: "monthly", priority: 0.7
-    add open_beta_article_path, changefreq: "monthly", priority: 0.5
-    add sign_up_path, changefreq: "monthly", priority: 0.6
-  else
-    add privacy_path, changefreq: "monthly", priority: 0.4
-  end
+  next unless AppConfig.main_app?
+
+  add about_path, changefreq: "monthly", priority: 0.6
+  add privacy_path, changefreq: "monthly", priority: 0.4
+  add pricing_path, changefreq: "weekly", priority: 0.8
+  add self_host_path, changefreq: "monthly", priority: 0.7
+  add open_beta_article_path, changefreq: "monthly", priority: 0.5
+  add sign_up_path, changefreq: "monthly", priority: 0.6
 end
 
 sitemap_url = "#{SitemapGenerator::Sitemap.default_host}/sitemap.xml.gz"

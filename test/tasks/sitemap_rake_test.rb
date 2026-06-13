@@ -44,15 +44,15 @@ class SitemapRakeTest < ActiveSupport::TestCase
     assert_not_includes urls, "https://ugo.cr/setup"
   end
 
-  test "self-hosted sitemap includes only universally public pages" do
+  test "self-hosted sitemap includes only the root URL" do
     setup_app_config_as_self_hosted!
 
     @task.invoke
 
     urls = sitemap_urls
-    assert_includes urls, "https://links.mycompany.com"
-    assert_includes urls, "https://links.mycompany.com/privacy"
+    assert_equal [ "https://links.mycompany.com" ], urls
 
+    assert_not_includes urls, "https://links.mycompany.com/privacy"
     assert_not_includes urls, "https://links.mycompany.com/about"
     assert_not_includes urls, "https://links.mycompany.com/pricing"
     assert_not_includes urls, "https://links.mycompany.com/self-host"
