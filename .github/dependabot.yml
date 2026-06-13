@@ -7,6 +7,7 @@ multi-ecosystem-groups:
       day: saturday
       time: "07:00"
       timezone: "America/New_York"
+    open-pull-requests-limit: 1
     labels:
       - dependencies
 
@@ -17,7 +18,6 @@ updates:
     multi-ecosystem-group: routine-updates
     cooldown:
       default-days: 3
-    open-pull-requests-limit: 1
     groups:
       all-gems:
         applies-to: version-updates
@@ -28,7 +28,6 @@ updates:
     directory: "/"
     patterns: ["*"]
     multi-ecosystem-group: routine-updates
-    open-pull-requests-limit: 1
     groups:
       all-actions:
         applies-to: version-updates
