@@ -110,6 +110,7 @@ jobs:
               echo "# Cloudflare orange-cloud proxy CIDRs (one per line)."
               echo "# Refreshed on every Release build; this committed copy is the offline fallback."
               cat /tmp/cf-v4.txt
+              echo
               cat /tmp/cf-v6.txt
             } | grep -v '^[[:space:]]*$' > "$FILE"
             echo "Updated $FILE ($(grep -cve '^\s*$' -e '^\s*#' "$FILE") CIDRs)"
