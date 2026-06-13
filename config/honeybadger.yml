@@ -18,3 +18,15 @@ debug: false
 
 insights:
   enabled: true
+
+# Puma dashboard charts (backlog, pool capacity, running threads) use polled
+# metrics in addition to stats.puma events. Requires plugin :honeybadger in puma.rb.
+puma:
+  insights:
+    metrics: true
+
+# Solid Queue runs in-process via the Puma plugin; enable cluster metrics for the
+# job dashboard (queue depth, workers, etc.).
+solid_queue:
+  insights:
+    metrics: true

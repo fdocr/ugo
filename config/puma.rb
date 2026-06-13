@@ -31,6 +31,9 @@ plugin :tmp_restart
 # Requires preload_app! when WEB_CONCURRENCY > 1. See solid_queue Puma plugin docs.
 plugin :solid_queue unless ENV["SOLID_QUEUE_IN_PUMA"] == "false"
 
+# Honeybadger Insights: Puma stats (backlog, pool capacity, running threads, etc.)
+plugin :honeybadger
+
 plugin :tailwindcss if ENV.fetch("RAILS_ENV", "development") == "development"
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
