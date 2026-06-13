@@ -84,7 +84,7 @@ GEM
     bindex (0.8.1)
     bootsnap (1.24.4)
       msgpack (~> 1.2)
-    brakeman (8.0.4)
+    brakeman (8.0.5)
       racc
     builder (3.3.0)
     capybara (3.40.0)
@@ -373,6 +373,8 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    sitemap_generator (7.0.1)
+      builder (~> 3.0)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -483,6 +485,7 @@ DEPENDENCIES
   rqrcode (~> 3.1)
   rubocop-rails-omakase
   selenium-webdriver
+  sitemap_generator (~> 7.0)
   solid_cable
   solid_cache
   solid_queue

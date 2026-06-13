@@ -51,6 +51,7 @@ class HomeController < ApplicationController
   end
 
   def privacy
+    redirect_to root_path if self_hosted?
   end
 
   def pricing

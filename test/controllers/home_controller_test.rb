@@ -124,6 +124,13 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "self-hosted privacy redirects to root" do
+    setup_app_config_as_self_hosted!
+
+    get privacy_path
+    assert_redirected_to root_path
+  end
+
   private
 
   def sign_in_as(user)
