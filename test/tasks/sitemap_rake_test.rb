@@ -19,7 +19,11 @@ class SitemapRakeTest < ActiveSupport::TestCase
   end
 
   teardown do
-    File.write(@robots_path, @original_robots) if @original_robots
+    if @original_robots
+      File.write(@robots_path, @original_robots)
+    elsif File.exist?(@robots_path)
+      File.delete(@robots_path)
+    end
     FileUtils.rm_rf(@output_dir)
     SitemapGenerator::Sitemap.public_path = "public/"
     @task.reenable
