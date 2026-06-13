@@ -1,9 +1,12 @@
 name: Update GeoLite2 DB
 
-# Automated GeoLite2 IP database refresh. Tags created by this workflow are
-# purely for triggering a Docker image rebuild with a fresh MaxMind database.
-# They are NOT code releases. Code releases are tagged manually (e.g. v0.2.0).
-# Automated tags are identifiable by their annotation containing
+# Automated GeoLite2 IP database refresh. When MaxMind publishes a new database,
+# this workflow creates an annotated v* tag (for cache-key bookkeeping) and uploads
+# a trigger artifact. The Release workflow picks that up via workflow_run and
+# rebuilds/pushes the GHCR image with a fresh GeoLite2-City.mmdb baked in.
+#
+# GeoLite2-only tags are NOT code releases. Code releases are tagged manually
+# (e.g. v0.2.0). Automated tags are identifiable by their annotation containing
 # "geolite2-last-modified:" in the tag message body.
 
 on:
@@ -98,3 +101,18 @@ jobs:
           geolite2-last-modified: ${REMOTE_DATE}"
           git tag -a "$NEXT_TAG" -m "$TAG_MSG"
           git push origin "$NEXT_TAG"
+
+      - name: Write release trigger artifact
+        if: steps.check.outputs.needs_update == 'true'
+        env:
+          NEXT_TAG: ${{ steps.check.outputs.next_tag }}
+        run: |
+          python3 -c 'import json, os; json.dump({"tag": os.environ["NEXT_TAG"]}, open("geolite-release-trigger.json", "w"))'
+
+      - name: Upload release trigger artifact
+        if: steps.check.outputs.needs_update == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: geolite-release-trigger
+          path: geolite-release-trigger.json
+          retention-days: 7

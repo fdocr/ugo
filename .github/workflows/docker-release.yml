@@ -1,0 +1,135 @@
+name: Docker Release Build
+
+# Shared GHCR build used by Release (manual tags + GeoLite2 workflow_run).
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Semver tag to build and push (e.g. v0.2.9)
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine GeoLite2 cache key
+        id: geo
+        env:
+          BUILD_TAG: ${{ inputs.tag }}
+        run: |
+          # Use the newest geolite2-last-modified marker at or below the tag
+          # being built (so code releases pick up the latest baked-in DB date).
+          GEO_DATE=""
+          for tag in $(git tag -l 'v*' | sort -V -r); do
+            HIGHER=$(printf '%s\n%s\n' "$tag" "$BUILD_TAG" | sort -V | tail -1)
+            if [ "$HIGHER" = "$tag" ] && [ "$tag" != "$BUILD_TAG" ]; then
+              continue
+            fi
+
+            MSG=$(git tag -l "$tag" --format='%(contents)')
+            DATE=$(echo "$MSG" | grep 'geolite2-last-modified:' | sed 's/.*geolite2-last-modified: //' || true)
+            if [ -n "$DATE" ]; then
+              GEO_DATE="$DATE"
+              echo "Found GeoLite2 date from tag $tag (building $BUILD_TAG): $GEO_DATE"
+              break
+            fi
+          done
+
+          if [ -n "$GEO_DATE" ]; then
+            HASH=$(echo -n "$GEO_DATE" | sha256sum | cut -d' ' -f1 | head -c 16)
+            echo "cache_key=geolite2-${HASH}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No GeoLite2 date found for $BUILD_TAG"
+            echo "cache_key=geolite2-none" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore GeoLite2 from cache
+        id: cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: GeoLite2-City.mmdb
+          key: ${{ steps.geo.outputs.cache_key }}
+          restore-keys: geolite2-
+
+      - name: Download GeoLite2 if not cached
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss — downloading from MaxMind..."
+          curl -sS -f -L -o /tmp/geolite2-city.tar.gz \
+            -u "${{ secrets.MAXMIND_ACCOUNT_ID }}:${{ secrets.MAXMIND_LICENSE_KEY }}" \
+            'https://download.maxmind.com/geoip/databases/GeoLite2-City/download?suffix=tar.gz' && \
+          tar -xzf /tmp/geolite2-city.tar.gz -C /tmp && \
+          find /tmp -name 'GeoLite2-City.mmdb' -exec mv {} ./GeoLite2-City.mmdb \; && \
+          rm -rf /tmp/geolite2-city.tar.gz /tmp/GeoLite2-City_*
+
+          if [ -f ./GeoLite2-City.mmdb ]; then
+            echo "GeoLite2-City.mmdb downloaded successfully"
+          else
+            echo "::warning::Download failed. Checking if a stale cache was restored via restore-keys..."
+          fi
+
+      - name: Verify GeoLite2 database
+        run: |
+          if [ -f ./GeoLite2-City.mmdb ]; then
+            SIZE=$(stat -c%s ./GeoLite2-City.mmdb 2>/dev/null || stat -f%z ./GeoLite2-City.mmdb)
+            echo "GeoLite2-City.mmdb present ($(( SIZE / 1024 / 1024 )) MB)"
+          else
+            echo "::warning::GeoLite2-City.mmdb not available — image will ship without geo IP data"
+          fi
+
+      - name: Save GeoLite2 to cache
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: GeoLite2-City.mmdb
+          key: ${{ steps.geo.outputs.cache_key }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            service=ugo
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
