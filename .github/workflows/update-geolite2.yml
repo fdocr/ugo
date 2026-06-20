@@ -28,7 +28,7 @@ jobs:
       actions: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -151,7 +151,7 @@ jobs:
 
       - name: Upload release trigger artifact
         if: steps.check.outputs.needs_update == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: geolite-release-trigger
           path: geolite-release-trigger.json
