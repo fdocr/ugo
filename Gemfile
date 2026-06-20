@@ -23,7 +23,7 @@ gem "solid_cable"
 gem "mission_control-jobs", "~> 1.0", ">= 1.0.2"
 gem "bootsnap", require: false
 gem "thruster", require: false
-gem "tailwindcss-rails", "~> 4.4"
+gem "tailwindcss-rails", "~> 4.5"
 gem "cloudflare-turnstile-rails", "~> 1.0"
 gem "maxminddb", "~> 0.1.22"
 gem "device_detector", "~> 1.1", ">= 1.1.3"
@@ -38,7 +38,7 @@ gem "flipper", "~> 1.4"
 gem "flipper-active_record", "~> 1.3"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
 
 group :development, :test do
   # Minitest [https://github.com/minitest/minitest]
