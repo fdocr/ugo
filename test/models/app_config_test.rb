@@ -81,6 +81,13 @@ class AppConfigTest < ActiveSupport::TestCase
     assert_equal "sentinel", Polar.config.access_token
   end
 
+  test "configure_polar! resets the PolarApi HTTP client" do
+    PolarApi.instance_variable_set(:@connection, :stale)
+    AppConfig.shared.update!(polar_access_token: "tok")
+    AppConfig.configure_polar!
+    assert_nil PolarApi.instance_variable_get(:@connection)
+  end
+
   test "polar_product_id returns DB value when set" do
     AppConfig.shared.update!(
       polar_basic_product_id: "db-basic-id",

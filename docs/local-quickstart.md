@@ -82,6 +82,8 @@ Site-wide admin access is separate—stored as a `site_admin` boolean column on 
 
 Subscriptions and payments are handled by [Polar](https://polar.sh). In production, Polar is configured through the admin panel. For local development, use the **Polar Sandbox** environment—a fully isolated instance where you can test purchases with Stripe test cards at no cost. Set the values in your `.env` file (they fall back to ENV when the database values are blank).
 
+ugo pins API requests to Polar API version `2026-04` (`Polar-Version` header). Webhook endpoints are versioned separately: in the Polar dashboard, set the endpoint's **API version** to `2026-04` as well. Updating the app does not migrate existing webhook endpoints. Polar's Current version changes quarterly; an unpinned webhook will start sending a different payload contract.
+
 ### Sandbox Setup
 
 1. Create a sandbox account at [sandbox.polar.sh](https://sandbox.polar.sh/start) (separate from your production account)
@@ -127,6 +129,8 @@ The Polar CLI includes a `listen` command that relays webhook events from your s
 
 The CLI session must stay running in a separate terminal while you test. Webhook events will appear in the CLI output as they are forwarded.
 
+`polar listen` creates an ephemeral endpoint that defaults to Polar's Current API version. After a quarterly Polar release, local payloads can differ from production if production is pinned to `2026-04`. Prefer a dashboard webhook with `api_version` set to `2026-04` when you need the same contract as production. Every delivery includes `webhook-api-version` (and `api_version` on the JSON).
+
 ### End-to-End Test Flow
 
 With both `bin/rails s` and `polar listen` running:
@@ -143,10 +147,12 @@ With both `bin/rails s` and `polar listen` running:
 
 | File | Purpose |
 |------|---------|
-| `config/initializers/polar.rb` | Configures the `polar_sh` gem (access token, sandbox mode, webhook secret) |
-| `app/controllers/webhooks/polar_controller.rb` | Receives and verifies webhook events, updates subscriptions/payments |
-| `app/controllers/checkout_controller.rb` | Creates Polar checkout sessions, renders embedded checkout |
-| `app/controllers/billing_controller.rb` | Billing overview and subscription cancellation |
+| `config/initializers/polar.rb` | Configures Polar credentials from AppConfig / ENV |
+| `lib/polar_api.rb` | HTTP client for checkout, customer portal, and revoke; sends `Polar-Version: 2026-04` |
+| `lib/polar_api/webhook.rb` | Verifies Polar HMAC and Standard Webhooks signatures, parses events |
+| `app/controllers/webhooks/polar_controller.rb` | Receives webhook events, updates subscriptions/payments |
+| `app/controllers/checkout_controller.rb` | Creates Polar checkout sessions (`POST /v1/checkouts/`) |
+| `app/controllers/billing_controller.rb` | Billing overview, customer portal, and subscription cancellation |
 | `app/models/subscription.rb` | Subscription record tied to a workspace |
 | `app/models/payment.rb` | Individual payment records linked to subscriptions |
 

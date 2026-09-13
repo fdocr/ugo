@@ -134,6 +134,7 @@
       <%= render "ui/card" do %>
         <h3 class="text-lg font-semibold text-foreground">Payments (Polar)</h3>
         <p class="ui-hint mb-4 mt-1">Configure Polar for subscription billing for the hosted ugo.cr service. This is hidden from self-hosted installations.</p>
+        <p class="ui-hint mb-4">API requests are pinned to Polar API version <code>2026-04</code>. In the Polar dashboard, set this webhook endpoint's API version to <code>2026-04</code> as well — API calls and webhook payloads are versioned separately.</p>
 
         <div class="space-y-4">
           <div class="space-y-2">

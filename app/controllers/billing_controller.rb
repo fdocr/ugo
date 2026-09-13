@@ -18,13 +18,13 @@ class BillingController < ApplicationController
       return
     end
 
-    session = Polar::CustomerSession.create(
+    session = PolarApi.create_customer_session(
       customer_id: subscription.polar_customer_id,
       return_url: workspace_billing_url(@workspace)
     )
 
     redirect_to session.customer_portal_url, allow_other_host: true
-  rescue Polar::Error => e
+  rescue PolarApi::Error => e
     Rails.logger.error "Polar customer session failed: #{e.message}"
     redirect_to workspace_billing_path(@workspace), alert: "Unable to open billing portal. Please try again later."
   end
@@ -38,14 +38,14 @@ class BillingController < ApplicationController
     end
 
     if subscription.polar_subscription_id.present?
-      Polar::Client.delete_request("/v1/subscriptions/#{subscription.polar_subscription_id}")
+      PolarApi.revoke_subscription(subscription.polar_subscription_id)
     end
 
     subscription.update!(status: :cancelled, cancelled_at: Time.current)
     @workspace.update!(plan: :free)
 
     redirect_to workspace_billing_path(@workspace), notice: "Your subscription has been cancelled."
-  rescue Polar::Error => e
+  rescue PolarApi::Error => e
     Rails.logger.error "Polar cancellation failed: #{e.message}"
     redirect_to workspace_billing_path(@workspace), alert: "Unable to cancel subscription. Please try again or contact support."
   end
