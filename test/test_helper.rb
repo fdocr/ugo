@@ -21,7 +21,10 @@ module ActiveSupport
       # counters from one test don't bleed into the next.
       ActionController::Base.cache_store.clear
     end
-    teardown { AppConfig.send(:reset_caches!) }
+    teardown do
+      AppConfig.send(:reset_caches!)
+      PolarApi.reset!
+    end
 
     def with_turnstile_keys(site:, secret:)
       old_site = ENV["CLOUDFLARE_TURNSTILE_SITE_KEY"]
@@ -60,6 +63,14 @@ module ActiveSupport
         setup_completed: true,
         app_domain: "links.mycompany.com"
       )
+    end
+
+    def stub_polar_api(method, implementation)
+      stubs = ActiveSupport::Testing::SimpleStubs.new
+      stubs.stub_object(PolarApi, method, &implementation)
+      yield
+    ensure
+      stubs&.unstub_all!
     end
   end
 end

@@ -43,6 +43,7 @@ class AppConfig < ApplicationRecord
   # Polar (payments) configuration
   # ------------------------------------------------------------------
   def self.configure_polar!
+    PolarApi.reset!
     cfg = shared
     access_token = cfg.polar_access_token.presence || ENV["POLAR_ACCESS_TOKEN"]
     return if access_token.blank?

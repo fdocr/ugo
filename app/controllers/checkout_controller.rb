@@ -9,16 +9,20 @@ class CheckoutController < ApplicationController
 
   def new
     product_id = AppConfig.polar_product_id(@plan)
+    if product_id.blank?
+      redirect_to workspace_billing_path(@workspace), alert: "Payment system is not configured."
+      return
+    end
 
-    checkout = Polar::Checkout::Custom.create(
-      product_id: product_id,
+    checkout = PolarApi.create_checkout(
+      products: [ product_id ],
       success_url: workspace_checkout_url(@workspace),
       customer_email: Current.user.email,
       metadata: { workspace_id: @workspace.id.to_s }
     )
 
     redirect_to checkout.url, allow_other_host: true
-  rescue Polar::Error => e
+  rescue PolarApi::Error => e
     Rails.logger.error "Polar checkout creation failed: #{e.message}"
     redirect_to workspace_billing_path(@workspace), alert: "Payment system is temporarily unavailable. Please try again later."
   end

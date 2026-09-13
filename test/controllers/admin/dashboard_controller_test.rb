@@ -441,6 +441,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_settings_path
     assert_response :success
     assert_select "h3", text: "Payments (Polar)"
+    assert_match "2026-04", response.body
   end
 
   test "self-hosted settings page does not include Polar configuration" do
