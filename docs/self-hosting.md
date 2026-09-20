@@ -89,6 +89,7 @@ Most configuration is handled through the setup wizard and admin panel. The foll
 | `RAILS_LOG_LEVEL` | `info` | Log verbosity (`debug`, `info`, `warn`, `error`) |
 | `GLITCHTIP_DSN` | _(unset)_ | [GlitchTip](https://glitchtip.com/) project DSN. Reporting is disabled when unset (see [Error tracking](#error-tracking-glitchtip)) |
 | `GLITCHTIP_SECURITY_ENDPOINT` | _(unset)_ | GlitchTip Security Endpoint. Adds a CSP `report-uri` when set |
+| `GLITCHTIP_SAMPLE_RATE` | `0.01` | Transaction sample rate (`0.0`–`1.0`). Default is 1%. Change this in Once Environment without shipping a new image |
 | `TRUSTED_PROXIES_EXTRA` | _(unset)_ | Optional extra proxy CIDRs beyond the baked Cloudflare list (advanced) |
 | `CLOUDFLARE_PROXIED` | _(unset)_ | Set to `true` only if `CF-Connecting-IP` should be trusted without a Cloudflare edge IP in the proxy chain (rare) |
 | `CLOUDFLARE_TURNSTILE_SITE_KEY` | _(unset)_ | Cloudflare Turnstile site key for sign-up bot protection (managed ugo.cr) |
@@ -121,19 +122,20 @@ docker exec <container_id> printenv WEB_CONCURRENCY RAILS_MAX_THREADS JOB_CONCUR
 
 ## Error tracking (GlitchTip)
 
-Error tracking via [GlitchTip](https://glitchtip.com/) is optional and disabled when `GLITCHTIP_DSN` is unset. It is configured **solely** through environment variables — there is no admin-panel setting. The Sentry Rails SDK sends uncaught exceptions (and 1% of transactions) to the hosted project. CSP violation reports go to `GLITCHTIP_SECURITY_ENDPOINT` when that is set.
+Error tracking via [GlitchTip](https://glitchtip.com/) is optional and disabled when `GLITCHTIP_DSN` is unset. It is configured **solely** through environment variables — there is no admin-panel setting. The Sentry Rails SDK sends uncaught exceptions (and a sample of transactions) to the hosted project. CSP violation reports go to `GLITCHTIP_SECURITY_ENDPOINT` when that is set.
 
-Add the variables in Once: **`s`** (Settings) → **`v`** (Environment) → one row per key → **Done** (Once redeploys). Copy both values from the GlitchTip project, not from this repo.
+Add the variables in Once: **`s`** (Settings) → **`v`** (Environment) → one row per key → **Done** (Once redeploys). Copy the DSN and Security Endpoint from the GlitchTip project, not from this repo.
 
 | Key | Value |
 |---|---|
 | `GLITCHTIP_DSN` | Project DSN (`https://<key>@app.glitchtip.com/<id>`) |
 | `GLITCHTIP_SECURITY_ENDPOINT` | Security Endpoint URL (optional) |
+| `GLITCHTIP_SAMPLE_RATE` | Transaction sample rate (`0.0`–`1.0`). Defaults to `0.01` (1%) when unset |
 
 Verify they landed:
 
 ```bash
-docker exec <container_id> printenv GLITCHTIP_DSN GLITCHTIP_SECURITY_ENDPOINT
+docker exec <container_id> printenv GLITCHTIP_DSN GLITCHTIP_SECURITY_ENDPOINT GLITCHTIP_SAMPLE_RATE
 ```
 
 There is no public test route in production. After deploy, `docker exec` into the container and run:
