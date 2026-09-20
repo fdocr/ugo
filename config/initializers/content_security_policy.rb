@@ -16,6 +16,11 @@ Rails.application.configure do
     policy.frame_src   "https://challenges.cloudflare.com"
     policy.base_uri    :self
     policy.form_action :self, :https
+
+    # Browser CSP violations. The GlitchTip project "Security Endpoint" URL.
+    if ENV["GLITCHTIP_SECURITY_ENDPOINT"].present?
+      policy.report_uri ENV["GLITCHTIP_SECURITY_ENDPOINT"]
+    end
   end
 
   # Generate session nonces for permitted importmap and inline scripts.
