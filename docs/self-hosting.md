@@ -87,7 +87,9 @@ Most configuration is handled through the setup wizard and admin panel. The foll
 | `SOLID_QUEUE_IN_PUMA` | enabled | Set to `false` to disable the Solid Queue Puma plugin (advanced; use `bin/jobs` separately) |
 | `DB_POOL` | _(auto)_ | Optional override for Active Record pool size per process (default: max of `RAILS_MAX_THREADS` and `SOLID_QUEUE_THREADS` + 2) |
 | `RAILS_LOG_LEVEL` | `info` | Log verbosity (`debug`, `info`, `warn`, `error`) |
-| `HONEYBADGER_API_KEY` | _(unset)_ | [Honeybadger](https://www.honeybadger.io/) error-tracking API key; reporting is disabled when unset (see [Error tracking](#error-tracking-honeybadger)) |
+| `GLITCHTIP_DSN` | _(unset)_ | [GlitchTip](https://glitchtip.com/) project DSN. Reporting is disabled when unset (see [Error tracking](#error-tracking-glitchtip)) |
+| `GLITCHTIP_SECURITY_ENDPOINT` | _(unset)_ | GlitchTip Security Endpoint. Adds a CSP `report-uri` when set |
+| `GLITCHTIP_SAMPLE_RATE` | `0.01` | Transaction sample rate (`0.0`–`1.0`). Default is 1%. Change this in Once Environment without shipping a new image |
 | `TRUSTED_PROXIES_EXTRA` | _(unset)_ | Optional extra proxy CIDRs beyond the baked Cloudflare list (advanced) |
 | `CLOUDFLARE_PROXIED` | _(unset)_ | Set to `true` only if `CF-Connecting-IP` should be trusted without a Cloudflare edge IP in the proxy chain (rare) |
 | `CLOUDFLARE_TURNSTILE_SITE_KEY` | _(unset)_ | Cloudflare Turnstile site key for sign-up bot protection (managed ugo.cr) |
@@ -118,17 +120,31 @@ Active Record’s `pool` is **per Ruby process**, not shared across the machine.
 docker exec <container_id> printenv WEB_CONCURRENCY RAILS_MAX_THREADS JOB_CONCURRENCY SOLID_QUEUE_THREADS
 ```
 
-## Error tracking (Honeybadger)
+## Error tracking (GlitchTip)
 
-Error tracking via [Honeybadger](https://www.honeybadger.io/) is optional and disabled by default. It is configured **solely** through the `HONEYBADGER_API_KEY` environment variable — there is no admin-panel setting. Errors are only reported in the production environment, and the integration disables itself automatically when the variable is unset.
+Error tracking via [GlitchTip](https://glitchtip.com/) is optional and disabled when `GLITCHTIP_DSN` is unset. It is configured **solely** through environment variables — there is no admin-panel setting. The Sentry Rails SDK sends uncaught exceptions (and a sample of transactions) to the hosted project. CSP violation reports go to `GLITCHTIP_SECURITY_ENDPOINT` when that is set.
 
-Add the variable in Once: **`s`** (Settings) → **`v`** (Environment) → add a row with **Key** `HONEYBADGER_API_KEY` and **Value** = your project API key → **Done** (Once redeploys). The new key takes effect once the container restarts.
+Add the variables in Once: **`s`** (Settings) → **`v`** (Environment) → one row per key → **Done** (Once redeploys). Copy the DSN and Security Endpoint from the GlitchTip project, not from this repo.
 
-Verify it is set:
+| Key | Value |
+|---|---|
+| `GLITCHTIP_DSN` | Project DSN (`https://<key>@app.glitchtip.com/<id>`) |
+| `GLITCHTIP_SECURITY_ENDPOINT` | Security Endpoint URL (optional) |
+| `GLITCHTIP_SAMPLE_RATE` | Transaction sample rate (`0.0`–`1.0`). Defaults to `0.01` (1%) when unset |
+
+Verify they landed:
 
 ```bash
-docker exec <container_id> printenv HONEYBADGER_API_KEY
+docker exec <container_id> printenv GLITCHTIP_DSN GLITCHTIP_SECURITY_ENDPOINT GLITCHTIP_SAMPLE_RATE
 ```
+
+There is no public test route in production. After deploy, `docker exec` into the container and run:
+
+```bash
+bin/rails runner 'Sentry.capture_message("GlitchTip ping from ugo")'
+```
+
+Locally, with the DSN in `.env`, run the same `bin/rails runner` command.
 
 ## Cloudflare (orange cloud) and trusted proxies
 
