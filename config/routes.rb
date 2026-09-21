@@ -30,9 +30,6 @@ Rails.application.routes.draw do
     namespace :dev do
       get "styleguide", to: "styleguide#show"
     end
-
-    # One-shot check that GLITCHTIP_DSN is reaching the hosted project.
-    get "debug-glitchtip" => proc { raise "Test GlitchTip error!" }
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
