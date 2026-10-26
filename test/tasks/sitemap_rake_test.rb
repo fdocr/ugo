@@ -13,17 +13,9 @@ class SitemapRakeTest < ActiveSupport::TestCase
     @output_dir = Rails.root.join("tmp/sitemaps-#{Process.pid}-#{SecureRandom.hex(4)}")
     FileUtils.mkdir_p(@output_dir)
     SitemapGenerator::Sitemap.public_path = @output_dir.to_s
-
-    @robots_path = Rails.root.join("public/robots.txt")
-    @original_robots = File.exist?(@robots_path) ? @robots_path.read : nil
   end
 
   teardown do
-    if @original_robots
-      File.write(@robots_path, @original_robots)
-    elsif File.exist?(@robots_path)
-      File.delete(@robots_path)
-    end
     FileUtils.rm_rf(@output_dir)
     SitemapGenerator::Sitemap.public_path = "public/"
     @task.reenable
@@ -62,14 +54,6 @@ class SitemapRakeTest < ActiveSupport::TestCase
     assert_not_includes urls, "https://links.mycompany.com/self-host"
     assert_not_includes urls, "https://links.mycompany.com/articles/open_beta"
     assert_not_includes urls, "https://links.mycompany.com/sign_up"
-  end
-
-  test "sitemap task updates robots.txt with the sitemap URL" do
-    setup_app_config_as_main_app!
-
-    @task.invoke
-
-    assert_match %r{Sitemap: https://ugo\.cr/sitemap\.xml\.gz}, @robots_path.read
   end
 
   private

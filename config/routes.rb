@@ -43,6 +43,8 @@ Rails.application.routes.draw do
   get "/.well-known/apple-app-site-association", to: "well_known#apple_app_site_association"
   get "/.well-known/assetlinks.json", to: "well_known#asset_links"
 
+  get "robots.txt", to: "robots#show"
+
   # Defines the root path route ("/")
   root "home#index"
   get "about" => "home#about"

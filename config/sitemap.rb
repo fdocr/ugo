@@ -19,14 +19,3 @@ SitemapGenerator::Sitemap.create do
   add open_beta_article_path, changefreq: "monthly", priority: 0.5
   add sign_up_path, changefreq: "monthly", priority: 0.6
 end
-
-sitemap_url = "#{SitemapGenerator::Sitemap.default_host}/sitemap.xml.gz"
-robots_path = Rails.root.join("public/robots.txt")
-File.write(
-  robots_path,
-  <<~ROBOTS
-    # See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-
-    Sitemap: #{sitemap_url}
-  ROBOTS
-)
