@@ -6,6 +6,12 @@ require "zlib"
 
 class SitemapRakeTest < ActiveSupport::TestCase
   def setup
+    # sitemap:create writes public/robots.txt. The suite runs in parallel,
+    # so hold this lock for the whole example or another worker can replace
+    # the file between generation and the assertion.
+    @robots_lock = File.open(Rails.root.join("tmp/sitemap-robots.lock"), File::CREAT | File::RDWR)
+    @robots_lock.flock(File::LOCK_EX)
+
     Rails.application.load_tasks
     @task = Rake::Task["sitemap:create"]
     @task.reenable
@@ -27,6 +33,9 @@ class SitemapRakeTest < ActiveSupport::TestCase
     FileUtils.rm_rf(@output_dir)
     SitemapGenerator::Sitemap.public_path = "public/"
     @task.reenable
+  ensure
+    @robots_lock&.flock(File::LOCK_UN)
+    @robots_lock&.close
   end
 
   test "main app sitemap includes public marketing pages only" do

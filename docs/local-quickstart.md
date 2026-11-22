@@ -4,7 +4,7 @@ This guide walks you through the setup up for development and overall details ab
 
 ## System Requirements
 
-* Ruby 3.4.4+
+* Ruby 3.4.13+
 * Rails 8.1+
 * SQLite 2.1+
 
